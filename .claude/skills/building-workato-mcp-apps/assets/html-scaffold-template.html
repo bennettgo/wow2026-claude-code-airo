@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>[CUSTOMIZE: App Name]</title>
+
+  <!-- Tailwind via CDN — cdn.jsdelivr.net must be in all four CSP fields -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <style>
+    body { margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+
+    /* [CUSTOMIZE: app-specific styles here] */
+
+    /* ============================================================
+       DEBUG PANEL — REMOVE BEFORE PRODUCTION
+       Delete this CSS block, the HTML element below, and replace
+       the log() function with: function log() {}
+       Then check for orphaned @media or CSS rules referencing
+       .debug-panel class names.
+       ============================================================ */
+    #debug-panel {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #1a1a1a; color: #00ff00; font-size: 11px;
+      padding: 8px; max-height: 200px; overflow-y: auto;
+      font-family: monospace; z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app" class="p-4">
+  <!-- Loading state: shown before app.connect() resolves -->
+  <div id="loading-state" class="flex items-center justify-center h-32">
+    <p class="text-gray-400">Connecting...</p>
+  </div>
+
+  <!-- Main content: hidden until data is ready -->
+  <div id="main-content" class="hidden">
+    <!-- [CUSTOMIZE: your app UI here] -->
+  </div>
+</div>
+
+<!-- DEBUG PANEL — REMOVE BEFORE PRODUCTION -->
+<div id="debug-panel"></div>
+
+<script type="module">
+  // IMPORTANT: type="module" is required on this script tag.
+  // The top-level "await app.connect()" below only works inside a module script.
+  // Do not change this to a regular <script> tag or the await will throw a syntax error.
+
+  // SDK import — cdn.jsdelivr.net must be in all four CSP fields
+  // Check https://cdn.jsdelivr.net/npm/@modelcontextprotocol/ext-apps/ for the latest version
+  import { App } from 'https://cdn.jsdelivr.net/npm/@modelcontextprotocol/ext-apps@1.3.1/dist/src/app-with-deps.js';
+
+  // ============================================================
+  // DEBUG HELPER
+  // REPLACE WITH no-op BEFORE PRODUCTION: function log() {}
+  // ============================================================
+  function log(label, data) {
+    const panel = document.getElementById('debug-panel');
+    if (!panel) return;
+    const entry = document.createElement('div');
+    entry.textContent = '[' + label + '] ' + (typeof data === 'object' ? JSON.stringify(data) : data);
+    panel.appendChild(entry);
+    panel.scrollTop = panel.scrollHeight;
+  }
+
+  // App initialization
+  const app = new App({ name: '[CUSTOMIZE: App Name]', version: '1.0.0' });
+
+  // Required: suppress the SDK's default tool result rendering
+  app.ontoolresult = () => {};
+
+  try {
+    // MUST be awaited before calling any tools or rendering content
+    await app.connect();
+    log('SDK', 'connected');
+
+    document.getElementById('loading-state').classList.add('hidden');
+    document.getElementById('main-content').classList.remove('hidden');
+
+    // [CUSTOMIZE: call your first tool here, or wait for user interaction]
+    // Example: await loadInitialData();
+
+  } catch (err) {
+    log('ERROR', err.message);
+    document.getElementById('loading-state').innerHTML =
+      '<p class="text-red-400">Connection failed. Check MCP server status.</p>';
+  }
+
+  // ============================================================
+  // TOOL CALL PATTERN
+  // Use this wrapper for every Workato tool call.
+  //
+  // ext-apps SDK 1.3.x: app.callServerTool({ name, arguments }) — NOT app.callTool().
+  // Result has two wrapping layers to handle:
+  //   1. MCP envelope: raw.structuredContent (typed) or raw.content[0].text (JSON string)
+  //   2. Workato Skills add a `{result: ...}` wrapper around workflow_return_result output.
+  //      API recipes do not. The `parsed?.result ?? parsed` line handles both.
+  // ============================================================
+  async function callTool(toolName, params) {
+    log('CALL', toolName + ' ' + JSON.stringify(params));
+    try {
+      const raw = await app.callServerTool({ name: toolName, arguments: params });
+      log('RAW', raw);
+      let parsed = raw?.structuredContent;
+      if (!parsed) {
+        const text = raw?.content?.[0]?.text;
+        parsed = text ? JSON.parse(text) : raw;
+      }
+      const result = parsed?.result ?? parsed;
+      log('PARSED', result);
+      return result;
+    } catch (err) {
+      log('TOOL_ERROR', err.message);
+      throw err;
+    }
+  }
+
+  // [CUSTOMIZE: app logic and event handlers]
+  //
+  // Example — load data on init:
+  // async function loadInitialData() {
+  //   const data = await callTool('your_tool_name', { query: 'default' });
+  //   renderResults(data.items);
+  // }
+  //
+  // Example — render results:
+  // function renderResults(items) {
+  //   const container = document.getElementById('main-content');
+  //   container.innerHTML = items.map(item =>
+  //     '<div class="p-3 border rounded mb-2">' + item.title + '</div>'
+  //   ).join('');
+  // }
+
+</script>
+
+</body>
+</html>

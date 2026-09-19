@@ -1,6 +1,6 @@
 ---
 name: workato-airo-build-notes
-description: Hard-won gotchas for building Workato assets through the AIRO MCP and Dev API MCP — skill creation, MCP server attachment, token minting, testing, job logs, and data-table-backed skills. Use whenever creating or debugging a Workato Skill, MCP server, Genie, or recipe through an MCP tool, or when an AIRO call fails in a way the error message does not explain.
+description: Hard-won gotchas for building Workato assets through the AIRO MCP and Dev API MCP, covering skill creation, MCP server attachment, token minting, testing, job logs, and data-table-backed skills. Use whenever creating or debugging a Workato Skill, MCP server, Genie, or recipe through an MCP tool, or when an AIRO call fails in a way the error message does not explain.
 ---
 
 # Workato AIRO build notes

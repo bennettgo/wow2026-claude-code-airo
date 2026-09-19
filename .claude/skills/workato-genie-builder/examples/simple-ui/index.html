@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Workato Genie · Chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    height: 100vh;
+    display: flex; flex-direction: column;
+    background: #f7f8fa; color: #1a1a1a;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    padding: 14px 18px;
+    background: #fff;
+    border-bottom: 1px solid #e3e6eb;
+    display: flex; align-items: center; gap: 8px;
+  }
+  header .dot { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; }
+  header h1 { font-size: 14px; font-weight: 600; }
+  header .sub { font-size: 12px; color: #9ca3af; margin-left: auto; }
+
+  #messages {
+    flex: 1; overflow-y: auto;
+    padding: 18px 16px;
+    display: flex; flex-direction: column; gap: 8px;
+    scroll-behavior: smooth;
+  }
+  .empty {
+    margin: auto; max-width: 280px;
+    text-align: center; color: #9ca3af; font-size: 13px;
+    padding: 40px 16px;
+  }
+  .empty strong { color: #1a1a1a; font-size: 15px; display: block; margin-bottom: 4px; }
+
+  .msg {
+    max-width: 72%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .msg.user {
+    background: #5b6cff; color: #fff;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+  .msg.agent {
+    background: #fff; color: #1a1a1a;
+    align-self: flex-start;
+    border: 1px solid #e3e6eb;
+    border-bottom-left-radius: 4px;
+    white-space: normal;
+  }
+  .msg.agent p { margin: 0 0 8px; }
+  .msg.agent p:last-child { margin-bottom: 0; }
+  .msg.agent ul, .msg.agent ol { margin: 4px 0 8px; padding-left: 22px; }
+  .msg.agent li { margin: 2px 0; }
+  .msg.agent code {
+    background: rgba(0,0,0,0.08);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+  }
+  .msg.agent pre {
+    background: rgba(0,0,0,0.06);
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin: 6px 0;
+    overflow-x: auto;
+    font-size: 12px;
+  }
+  .msg.agent pre code { background: transparent; padding: 0; }
+  .msg.agent a { color: #5b6cff; text-decoration: underline; }
+  .msg.agent strong { font-weight: 600; }
+  .msg.agent h3, .msg.agent h4 { font-size: 13.5px; font-weight: 600; margin: 8px 0 4px; }
+
+  .skill {
+    align-self: flex-start;
+    font-size: 11.5px;
+    padding: 6px 12px;
+    background: #faf5ff;
+    border: 1px solid #d8b4fe;
+    color: #6b21a8;
+    border-radius: 999px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .skill .pulse { width: 6px; height: 6px; border-radius: 50%; background: #6b21a8; animation: pulse 1.2s infinite; flex-shrink: 0; }
+  .skill .timing { font-size: 10.5px; color: #9ca3af; font-variant-numeric: tabular-nums; }
+  .skill.done { background: #f0fdf4; border-color: #86efac; color: #166534; }
+  .skill.done .pulse { background: #16a34a; animation: none; }
+  .skill.failed { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+  .skill.failed .pulse { background: #dc2626; animation: none; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .approval {
+    align-self: stretch;
+    max-width: 72%;
+    background: #fffbeb;
+    border: 1px solid #fbbf24;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  .approval h4 { font-size: 13px; margin-bottom: 6px; color: #92400e; }
+  .approval pre {
+    font-size: 11px;
+    background: rgba(0,0,0,.05);
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin: 6px 0 10px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: #1a1a1a;
+  }
+  .approval button {
+    border: 0; border-radius: 6px;
+    padding: 6px 14px;
+    font: inherit; font-weight: 500;
+    cursor: pointer;
+  }
+  .approval button.approve { background: #16a34a; color: #fff; }
+  .approval button.reject { background: #fff; color: #991b1b; border: 1px solid #fca5a5; margin-left: 8px; }
+  .approval button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .approval .resolved {
+    font-size: 11px; color: #6b7280; margin-top: 8px;
+  }
+
+  #status {
+    padding: 4px 16px;
+    font-size: 11px; color: #9ca3af;
+    min-height: 18px;
+  }
+  #status.err { color: #dc2626; }
+
+  #composer {
+    display: flex; gap: 8px;
+    padding: 12px 16px;
+    background: #fff;
+    border-top: 1px solid #e3e6eb;
+  }
+  #input {
+    flex: 1; padding: 10px 14px;
+    border: 1px solid #e3e6eb; border-radius: 18px;
+    font: inherit; outline: none;
+    background: #f7f8fa;
+  }
+  #input:focus { border-color: #5b6cff; background: #fff; }
+  #send {
+    background: #5b6cff; color: #fff;
+    border: 0; border-radius: 18px;
+    padding: 0 20px;
+    cursor: pointer;
+    font-weight: 600; font-size: 13px;
+  }
+  #send:disabled { background: #cbd5e1; cursor: not-allowed; }
+</style>
+</head>
+<body>
+  <header>
+    <span class="dot"></span>
+    <h1>Workato Genie</h1>
+    <span class="sub" id="conv-label">no conversation yet</span>
+  </header>
+
+  <div id="messages">
+    <div class="empty">
+      <strong>Ready when you are</strong>
+      Ask the genie a question to begin. Try "How much PTO do I have left?"
+    </div>
+  </div>
+
+  <div id="status"></div>
+
+  <form id="composer">
+    <input id="input" type="text" placeholder="Type a message…" autocomplete="off" autofocus>
+    <button id="send" type="submit">Send</button>
+  </form>
+
+<script>
+const msgs   = document.getElementById("messages");
+const input  = document.getElementById("input");
+const send   = document.getElementById("send");
+const status = document.getElementById("status");
+const form   = document.getElementById("composer");
+const label  = document.getElementById("conv-label");
+
+let conversationId = null;
+const skillChips = new Map();    // skill_name → element
+const skillStartTimes = new Map(); // skill_name → ms-timestamp when skill.running fired
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+function clearEmpty() {
+  const empty = msgs.querySelector(".empty");
+  if (empty) empty.remove();
+}
+
+// Minimal markdown → HTML for agent messages (bold/italic/code/lists/links).
+// Agent text often arrives as markdown; rendering it raw makes asterisks and
+// hyphens look noisy. Strip-down version of the renderer in the production widget.
+function renderMarkdown(md) {
+  let s = String(md == null ? "" : md)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  s = s.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g,
+    (_, l, c) => `<pre><code>${c.replace(/\n$/, "")}</code></pre>`);
+  s = s.replace(/`([^`\n]+)`/g, "<code>$1</code>");
+  s = s.replace(/^### (.+)$/gm, "<h4>$1</h4>");
+  s = s.replace(/^## (.+)$/gm, "<h3>$1</h3>");
+  s = s.replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
+  s = s.replace(/(?<![*\w])\*([^*\n]+)\*(?!\w)/g, "<em>$1</em>");
+  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  s = s.replace(/(?:^|\n)((?:[-*] .+(?:\n|$))+)/g, (_, b) => {
+    const items = b.trim().split(/\n/).map(l => `<li>${l.replace(/^[-*] /, "")}</li>`).join("");
+    return `\n<ul>${items}</ul>`;
+  });
+  s = s.replace(/(?:^|\n)((?:\d+\. .+(?:\n|$))+)/g, (_, b) => {
+    const items = b.trim().split(/\n/).map(l => `<li>${l.replace(/^\d+\. /, "")}</li>`).join("");
+    return `\n<ol>${items}</ol>`;
+  });
+  return s.split(/\n\n+/).map(p => p.trim()).filter(Boolean).map(p =>
+    /^<(h\d|ul|ol|pre)/.test(p) ? p : "<p>" + p.replace(/\n/g, "<br>") + "</p>"
+  ).join("\n");
+}
+
+function addMessage(text, role) {
+  clearEmpty();
+  const m = el("div", `msg ${role}`);
+  if (role === "agent") {
+    m.innerHTML = renderMarkdown(text);
+  } else {
+    m.textContent = text;
+  }
+  msgs.appendChild(m);
+  msgs.scrollTop = msgs.scrollHeight;
+  return m;
+}
+
+function addSkillChip(name) {
+  const chip = el("div", "skill");
+  const label = el("span", null, `Running ${name}…`);
+  const timing = el("span", "timing");
+  chip.append(el("span", "pulse"), label, timing);
+  msgs.appendChild(chip);
+  msgs.scrollTop = msgs.scrollHeight;
+  skillChips.set(name, chip);
+  skillStartTimes.set(name, Date.now());
+}
+
+function completeSkillChip(name, ok = true) {
+  const chip = skillChips.get(name);
+  if (!chip) return;
+  chip.classList.add(ok ? "done" : "failed");
+  const label = chip.querySelectorAll("span")[1];
+  if (label) label.textContent = `${ok ? "✓" : "✗"} ${name}`;
+  const start = skillStartTimes.get(name);
+  if (start) {
+    const ms = Date.now() - start;
+    const timing = chip.querySelector(".timing");
+    if (timing) timing.textContent = ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(1)}s`;
+  }
+}
+
+function addApprovalCard(d) {
+  clearEmpty();
+  const card = el("div", "approval");
+  card.append(el("h4", null, `Confirm: ${d.skill_name}`));
+  const args = d.parameters || d.inputs || d.arguments || {};
+  card.append(el("pre", null, JSON.stringify(args, null, 2)));
+
+  const approve = el("button", "approve", "Approve");
+  const reject  = el("button", "reject",  "Reject");
+  const resolved = el("div", "resolved");
+  card.append(approve, reject, resolved);
+  msgs.appendChild(card);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  approve.onclick = () => resolve("approved");
+  reject.onclick  = () => resolve("rejected");
+
+  async function resolve(resolution) {
+    approve.disabled = reject.disabled = true;
+    resolved.textContent = `Sending ${resolution}…`;
+    const body = resolution === "rejected"
+      ? { resolution, rejection_reason: "User declined" }
+      : { resolution };
+    const r = await fetch(`/api/conversations/${conversationId}/skill_approval/${d.call_id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    resolved.textContent = `${resolution} (${r.status})`;
+    // The original SSE stream stays open across the approval; the next
+    // skill.running / skill.completed / agent.message events flow in via
+    // readSSE naturally. No reconnect or poll needed here.
+  }
+}
+
+async function ensureConversation() {
+  if (conversationId) return conversationId;
+  const r = await fetch("/api/conversations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+  });
+  const data = await r.json();
+  conversationId = data.result.conversation_id;
+  label.textContent = conversationId.slice(0, 20) + "…";
+  return conversationId;
+}
+
+async function sendMessage(text) {
+  addMessage(text, "user");
+  input.value = "";
+  send.disabled = true;
+  status.textContent = "Thinking…";
+  status.className = "";
+
+  try {
+    const cid = await ensureConversation();
+    const resp = await fetch(`/api/conversations/${cid}/messages`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "text/event-stream",
+      },
+      body: JSON.stringify({ file_id: "", message: text, stream: true }),
+    });
+    if (resp.status === 401) {
+      throw new Error("Access denied — your user isn't in an allow-listed group on this genie.");
+    }
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    await readSSE(resp.body.getReader());
+  } catch (err) {
+    status.textContent = `Error: ${err.message}`;
+    status.className = "err";
+  } finally {
+    send.disabled = false;
+    status.textContent = "";
+    input.focus();
+  }
+}
+
+async function readSSE(reader) {
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let eventType = null;
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    let nl;
+    while ((nl = buffer.indexOf("\n")) >= 0) {
+      const line = buffer.slice(0, nl).replace(/\r$/, "");
+      buffer = buffer.slice(nl + 1);
+      if (!line) { eventType = null; continue; }
+      if (line.startsWith("event:")) {
+        eventType = line.slice(6).trim();
+      } else if (line.startsWith("data:")) {
+        const raw = line.slice(5).trim();
+        try { handle(eventType, JSON.parse(raw)); } catch {}
+      }
+    }
+  }
+}
+
+function handle(type, d) {
+  if (type === "system.ping") return;   // SSE heartbeat — ignore
+  if (type === "agent.message") {
+    addMessage(d.message || "", "agent");
+  } else if (type === "skill.running") {
+    addSkillChip(d.skill_name);
+  } else if (type === "skill.completed" || type === "skill.stopped") {
+    completeSkillChip(d.skill_name, true);
+  } else if (type === "skill.failed") {
+    completeSkillChip(d.skill_name, false);
+  } else if (type === "skill.confirmation_required") {
+    addApprovalCard(d);
+  }
+  // processing.started / processing.finished are ignored for this simple UI
+}
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (text) sendMessage(text);
+});
+</script>
+</body>
+</html>

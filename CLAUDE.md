@@ -1,4 +1,4 @@
-# WoW 2026 — Claude Code + AIRO: session repo
+# WoW 2026 - Claude Code + AIRO: session repo
 
 This repo backs the 45-minute breakout **"Claude Code + AIRO: From Vibe Coding to Production, Live."** It is also a demo artifact in its own right: outline section 7 ends by pushing this repo so a teammate can pick up where the session left off. Treat it as something a stranger will clone.
 
@@ -58,8 +58,9 @@ Six live bearer tokens were found in this folder on 2026-09-19. `.mcp.json`, `.c
 
 ## Working agreements
 
-- **Apply the `unslop` skill to everything written here** — runbook, talk track, README, commit messages, anything a human reads. This matters more than usual because the talk track is spoken aloud, and filler that survives in a doc is audible in a room. Pair with `my-writing-style` for anything in Bennett's voice.
+- **Apply the `unslop` skill to everything written here.** Runbook, talk track, README, commit messages, anything a human reads. This matters more than usual because the talk track is spoken aloud, and filler that survives in a doc is audible in a room. Pair with `my-writing-style` for anything in Bennett's voice. Both skills are vendored into `.claude/skills/`, so they load automatically in this folder.
 - **Read `.claude/skills/workato-airo-build-notes/` before building Workato assets through MCP.** It holds the gotchas that cost hours to rediscover: the `config: []` requirement, skill-handle attachment, which MCP reaches which workspace, and why `get_recipe_test_status` cannot be trusted.
+- **`.claude/skills/README.md` indexes the rest.** Skills for building Genies, ingesting Knowledge Bases, standing up MCP servers, and benchmarking a Genie are all vendored here. They are snapshots taken 2026-09-19 and will drift from upstream.
 - **Verify against the live workspace before claiming something works.** Every number and behaviour shown on stage must be reproducible with a tool call.
 - **Do not invent brand names.** Branchwood and IDEAONE House are canon within IDEA Lifestyle if the new use case needs suppliers.
 - Open items live in `docs/runbook.md`. Do not fork them into side files.

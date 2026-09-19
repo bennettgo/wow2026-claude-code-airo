@@ -1,4 +1,4 @@
-# Runbook — Claude Code + AIRO: From Vibe Coding to Production, Live
+# Runbook - Claude Code + AIRO: From Vibe Coding to Production, Live
 
 Stage-by-stage detail under the [session outline](https://docs.google.com/document/d/1Gx5TYPLl88pTPg0le_ShjRXq5jLHZOJcvcdmBiGyTlc). The outline governs the flow. This file records how each stage runs, what is decided, and what is not.
 
@@ -29,7 +29,7 @@ Stages 4 through 6 carry equal weight on purpose. Each is one turn of the same l
 
 ---
 
-## 1. Opening — build speed is not ship speed (2 min)
+## 1. Opening: build speed is not ship speed (2 min)
 
 Reuse the Product Hour slide: "anyone can lay a plank" plus the production-grade demands checklist. Land the thesis: watch the whole gap close, live, one prompt at a time.
 

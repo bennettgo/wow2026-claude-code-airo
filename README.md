@@ -1,4 +1,4 @@
-# WoW 2026 — Claude Code + AIRO: From Vibe Coding to Production, Live
+# WoW 2026 - Claude Code + AIRO: From Vibe Coding to Production, Live
 
 Working repo for a 45-minute breakout session. It holds the runbook, the agent skills captured while building, and the scripts used to check that what we built still works.
 

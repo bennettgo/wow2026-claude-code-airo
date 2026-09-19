@@ -1,0 +1,101 @@
+{
+  "genie": {
+    "name": "InnovaTech HR Concierge",
+    "description": "AI assistant for HR questions: time off, benefits, payroll, and policy lookup. Available in the People Hub portal via the embedded chat widget.",
+    "instructions_file": "hr-concierge-instructions.md",
+    "ai_provider": "open_ai"
+  },
+  "folder_name": "InnovaTech HR Concierge",
+  "user_group_name": "HR Concierge Users",
+  "skills": [
+    {
+      "name": "Get PTO Balance",
+      "description": "Returns the signed-in employee's current PTO balance — days used this year, days remaining, carryover from last year, and total allocation.",
+      "parameters": [],
+      "results": [
+        {"control_type": "text",    "label": "Status",            "name": "status",            "type": "string",  "optional": false},
+        {"control_type": "integer", "label": "Days used",         "name": "days_used",         "type": "integer", "optional": true},
+        {"control_type": "integer", "label": "Days remaining",    "name": "days_remaining",    "type": "integer", "optional": true},
+        {"control_type": "integer", "label": "Carryover",         "name": "carryover_days",    "type": "integer", "optional": true},
+        {"control_type": "integer", "label": "Total allocation",  "name": "total_allocation",  "type": "integer", "optional": true},
+        {"control_type": "text",    "label": "Message",           "name": "message",           "type": "string",  "optional": true}
+      ],
+      "stub_response": {
+        "status": "ok",
+        "days_used": 9,
+        "days_remaining": 12,
+        "carryover_days": 3,
+        "total_allocation": 21,
+        "message": "You have 12 PTO days remaining (9 used this year, 3 carried over from 2025)."
+      },
+      "requires_confirmation": false
+    },
+    {
+      "name": "List Benefits",
+      "description": "Returns the signed-in employee's current benefits enrolment — medical, dental, vision plans, and 401(k) contribution rate.",
+      "parameters": [],
+      "results": [
+        {"control_type": "text", "label": "Status",            "name": "status",            "type": "string", "optional": false},
+        {"control_type": "text", "label": "Medical plan",      "name": "medical_plan",      "type": "string", "optional": true},
+        {"control_type": "text", "label": "Dental plan",       "name": "dental_plan",       "type": "string", "optional": true},
+        {"control_type": "text", "label": "Vision plan",       "name": "vision_plan",       "type": "string", "optional": true},
+        {"control_type": "text", "label": "401k contribution", "name": "contribution_401k", "type": "string", "optional": true},
+        {"control_type": "text", "label": "Message",           "name": "message",           "type": "string", "optional": true}
+      ],
+      "stub_response": {
+        "status": "ok",
+        "medical_plan": "PPO Gold — Employee + Spouse",
+        "dental_plan":  "Standard Dental — Family",
+        "vision_plan":  "Vision Plus — Family",
+        "contribution_401k": "6% (matched in full by employer)",
+        "message": "You're enrolled in PPO Gold (medical), Standard Dental, Vision Plus, and contributing 6% to your 401(k) — fully matched."
+      },
+      "requires_confirmation": false
+    },
+    {
+      "name": "Submit Time Off Request",
+      "description": "File a paid time off, sick, personal-day, bereavement, or parental leave request. Always confirm details with the user before submitting.",
+      "parameters": [
+        {"control_type": "text", "label": "Start date",  "name": "start_date",  "type": "string", "optional": false, "hint": "YYYY-MM-DD"},
+        {"control_type": "text", "label": "End date",    "name": "end_date",    "type": "string", "optional": false, "hint": "YYYY-MM-DD (inclusive)"},
+        {"control_type": "text", "label": "Leave type",  "name": "leave_type",  "type": "string", "optional": false, "hint": "pto | sick | personal | bereavement | parental"},
+        {"control_type": "text", "label": "Notes",       "name": "notes",       "type": "string", "optional": true,  "hint": "Optional context for your manager"}
+      ],
+      "results": [
+        {"control_type": "text", "label": "Status",     "name": "status",     "type": "string", "optional": false},
+        {"control_type": "text", "label": "Request ID", "name": "request_id", "type": "string", "optional": true},
+        {"control_type": "text", "label": "Manager",    "name": "approver",   "type": "string", "optional": true},
+        {"control_type": "text", "label": "Message",    "name": "message",    "type": "string", "optional": true}
+      ],
+      "stub_response": {
+        "status": "submitted",
+        "request_id": "TR-2026-0942",
+        "approver": "Priya Krishnan",
+        "message": "Your time-off request was submitted. You'll get an approval email within 1 business day."
+      },
+      "requires_confirmation": true
+    },
+    {
+      "name": "Get Latest Payslip",
+      "description": "Returns the signed-in employee's most recent payslip summary — period, pay date, net amount, and deposit account.",
+      "parameters": [],
+      "results": [
+        {"control_type": "text", "label": "Status",          "name": "status",         "type": "string", "optional": false},
+        {"control_type": "text", "label": "Period",          "name": "period",         "type": "string", "optional": true},
+        {"control_type": "text", "label": "Pay date",        "name": "pay_date",       "type": "string", "optional": true},
+        {"control_type": "text", "label": "Net amount",      "name": "net_amount",     "type": "string", "optional": true},
+        {"control_type": "text", "label": "Deposit last 4",  "name": "deposit_last4",  "type": "string", "optional": true},
+        {"control_type": "text", "label": "Message",         "name": "message",        "type": "string", "optional": true}
+      ],
+      "stub_response": {
+        "status": "ok",
+        "period": "Jul 2026",
+        "pay_date": "2026-07-28",
+        "net_amount": "SGD 8,420.50",
+        "deposit_last4": "4521",
+        "message": "Your July payslip totalled SGD 8,420.50, deposited 28 Jul into account ending 4521."
+      },
+      "requires_confirmation": false
+    }
+  ]
+}
