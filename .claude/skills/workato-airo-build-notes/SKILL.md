@@ -25,6 +25,18 @@ A 404 from `mcp_server_get`, or `recipe_list` returning 0 for a folder you can s
 
 A recipe using the `workato_skill` trigger needs an explicit `"config": "[]"` field at creation. Without it the recipe is created but cannot be started, and the error is `missing adapter configuration: workato_skill`, which does not point at the missing field.
 
+## "Folder not found" on push when the folder plainly exists
+
+If `workspace_push` fails with `Folder with id 'NNN' was not found` while `folder.list` and `project.list` both return that folder, it is a project grant gap, not a missing folder. The read path and the write path use different authorization. Verified 2026-09-19: folder `583790` listed fine and refused every push, while `578470` accepted one immediately.
+
+Fix it by granting the pushing identity access to that project. Do not work around it by building somewhere else and moving assets later.
+
+## Pushing a skill-triggered recipe converts it automatically
+
+`workspace_push` on a recipe whose trigger is `workato_skill` returns both the recipe ID and a `skl-*` handle, already converted. Verified 2026-09-19: recipe `1874274` came back with `skl-Abe89XRW-Ct3w3E-B6` from the push alone.
+
+The separate `recipe_builder_convert_to_skill` step is only needed when a recipe was created some other way, for example by the older recipe-builder flow or the migration script.
+
 ## Attaching skills to an MCP server
 
 Convert the recipe to a Skill first, then attach it by its `skl-*` handle:

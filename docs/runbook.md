@@ -140,7 +140,10 @@ Likely replacements worth planting: why a Genie rather than a routing rule for t
 
 ## Open items
 
-- [ ] **Verify the Salesforce dev org supports the design.** Cases are standard, but confirm the org has Case records to query, a usable status and owner model, and enough sample data to demo against. This is the load-bearing assumption of stages 4 through 6.
+- [x] ~~Verify the Salesforce dev org supports the design.~~ Done 2026-09-19. The `get_ticket_status` skill was built, pushed and tested green against `SFDC - DEV`. Salesforce connects, the Case object is queryable, and a valid SOQL query returns cleanly. Recipe `1874274`, Skill `skl-Abe89XRW-Ct3w3E-B6`, job `j-Abe89tRx-n36Mae-B6`.
+- [ ] **Fix the project grant gap on "Idea Lifestyle Conference Demo" (555710, folder 583790).** Reads see the folder; every `workspace_push` to it fails with `Folder with id '583790' was not found`. The same push into folder `578470` succeeded immediately, so this is authorization, not tooling. Until it is fixed, assets land in the wrong project.
+- [ ] **Move `get_ticket_status` into the conference demo project** once the grant is fixed. It currently sits in `578470`, the retired stub folder, purely because that folder accepted the push.
+- [ ] **Seed Salesforce Cases.** The org has no case `00001026`, and the demo needs specific legible tickets anyway (a chiller repair at a named store, not whatever a dev org happens to hold). Confirm how many Cases exist today, then seed the handful the talk track names.
 - [ ] Seed store data. `get_store_details` needs a Data Table of stores, and the Cases need to reference them.
 - [ ] Write the store operations policy documents for the stage 6 Knowledge Base.
 - [ ] Rewrite the three stale FAQ entries against store operations.
@@ -148,4 +151,5 @@ Likely replacements worth planting: why a Genie rather than a routing rule for t
 - [ ] Confirm the proposed timings for stages 3 through 8 against a rehearsal.
 - [ ] Journey slides for stages 4, 5, 6 and 7 do not exist yet.
 - [ ] Confirm co-speaker logistics with Abhishek.
-- [ ] Rotate the six bearer tokens found in the folder on 2026-09-19. They sat unprotected on disk and are now gitignored, not invalidated.
+- [ ] Revoke the two live stub-server tokens (`1e03f322…`, `ff7d7f1c…`, gateways 12572 and 12575). They belong to the retired `sales-inventory-mcp` and `crm-promotions-mcp` servers, are not needed by the store ops build, and are gitignored rather than invalidated. The two in `.codex/config.toml` point at the pre-migration gateways 11680 and 11681 and are already dead; delete them.
+- [ ] Decide whether the two retired stub MCP servers on preview should be deleted outright, now that nothing uses them.

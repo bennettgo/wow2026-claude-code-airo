@@ -50,7 +50,9 @@ Salesforce Cases carry the tickets, Slack carries escalation, and Workato Data T
 
 ## Secrets
 
-Six live bearer tokens were found in this folder on 2026-09-19. `.mcp.json`, `.codex/` and `.omp/` are gitignored for that reason, and `.mcp.json.example` carries placeholders instead.
+Four distinct bearer tokens sit in this folder untracked, across six occurrences in three client configs. `.mcp.json`, `.codex/` and `.omp/` are gitignored for that reason, and `.mcp.json.example` carries placeholders instead.
+
+They all belong to the retired `sales-inventory-mcp` and `crm-promotions-mcp` stub servers. Two (`1e03f322…`, `ff7d7f1c…`, in `.mcp.json` and `.omp/mcp.json`) still reach live servers on preview at gateways 12572 and 12575. The other two (`ed66cc7a…`, `fdf1005c…`, in `.codex/config.toml`) point at gateways 11680 and 11681, which belonged to the pre-migration folder `578568` and are stale.
 
 - Never commit a real token, gateway URL with credentials, or API key.
 - Run a secret scan over staged content before any push, not just a filename check.
