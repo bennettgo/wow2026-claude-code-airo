@@ -1,0 +1,18 @@
+# Live MCP credentials. Commit .mcp.json.example instead.
+.mcp.json
+.omp/
+.codex/
+
+# Session memory and conversation logs. Never publish.
+.remember/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Local Claude overrides (settings.json itself is committed)
+.claude/settings.local.json

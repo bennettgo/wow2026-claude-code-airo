@@ -1,0 +1,20 @@
+{
+  "_comment": "Copy to .mcp.json and fill in real values. .mcp.json is gitignored because these are live bearer tokens. Session outline section 3 walks through obtaining them: https://docs.workato.com/en/airo/mcp and https://docs.workato.com/en/mcp/developer-api-mcp",
+
+  "mcpServers": {
+    "airo-mcp": {
+      "type": "http",
+      "url": "https://<your-mcp-gateway>.apim.mcp.workato.com",
+      "headers": {
+        "Authorization": "Bearer <AIRO_MCP_TOKEN>"
+      }
+    },
+    "workato-dev-api": {
+      "type": "http",
+      "url": "https://<your-dev-api-gateway>",
+      "headers": {
+        "Authorization": "Bearer <DEV_API_TOKEN>"
+      }
+    }
+  }
+}
