@@ -26,15 +26,27 @@ Four verbs, in order. Each stage adds one capability and reuses the last.
 
 Co-speaker: Abhishek Bhattacherjee.
 
-## Open decision that blocks content
+## Use case and environment
 
-**The use case is not chosen yet.** The outline leaves it open in three places and they constrain each other:
+Decided 2026-09-19.
 
-- Section 2 wants it simple enough to introduce in about 90 seconds.
-- Section 5 needs skills an ordinary employee would want in Claude Desktop.
-- Section 6 needs the same skills to justify an agent running unattended.
+**Store operations desk.** IDEA Lifestyle runs 800+ stores. A store manager's day is full of small operational questions and requests: damaged stock, facilities faults, staffing approvals. Today that means digging through a policy portal or emailing head office. The session builds the desk that answers them.
 
-Until it is picked, do not write stage content that assumes a domain. The previous sell-through drift storyline was retired on 2026-09-19; it is recoverable from commit `a9b4f8b` but should not be revived without a decision.
+It satisfies the outline's three constraints. It introduces in about 90 seconds, the skills are ones a store manager would genuinely want in Claude Desktop, and ticket triage gives an honest reason to run unattended.
+
+**Environment: Workato preview, workspace "IDEA Lifestyle Customer Data & Personalization" (325807).** Root folder `577822`. Build into project **"Idea Lifestyle Conference Demo"** (project `555710`, folder `583790`), which exists and is empty.
+
+Authorized connections there, verified 2026-09-19. Design within these:
+
+| Connection | ID | Provider |
+|---|---|---|
+| SFDC - DEV | 105904 | salesforce |
+| Ideal Lifestyle | 105903 | slack |
+| TypeSafe AI | 108365 | rest |
+
+`Loma's Datadog Connection` (105619) exists but was never authorized. Anything else needs creating first.
+
+Salesforce Cases carry the tickets, Slack carries escalation, and Workato Data Tables plus a Knowledge Base carry store and policy data. The previous sell-through drift storyline was retired on 2026-09-19 and is recoverable from commit `a9b4f8b`.
 
 ## Secrets
 
