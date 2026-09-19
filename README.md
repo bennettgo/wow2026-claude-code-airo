@@ -16,14 +16,44 @@ Execution Plane covers ideating and building. Control Plane covers verifying and
 cp .mcp.json.example .mcp.json
 ```
 
-Fill in real values, then connect the two MCP servers the session runs on:
+Then connect the two MCP servers the session runs on. Both live on the Workato
+preview data centre, because that is where the demo workspace is.
 
-- **AIRO MCP** builds. Recipes, skills, MCP servers, Genies. It is the only thing that mutates the workspace. https://docs.workato.com/en/airo/mcp
-- **Dev API MCP** audits. Job logs, failures, test runs, connections. It never builds anything. https://docs.workato.com/en/mcp/developer-api-mcp
+| Role | Server | Endpoint |
+|---|---|---|
+| Builds | AIRO MCP | `https://app.preview.workato.com/airo_mcp` |
+| Audits | Dev API MCP | `https://app.preview.workato.com/mcp` |
+
+- **AIRO MCP** builds. Recipes, skills, MCP servers, Genies. It is the only thing that mutates the workspace. [Docs](https://docs.workato.com/en/airo/mcp)
+- **Dev API MCP** audits. Job logs, failures, test runs, connections, project grants. It never builds anything. [Docs](https://docs.workato.com/en/mcp/developer-api-mcp)
 
 Keeping those two roles separate is the point, not an accident of tooling. If AIRO both builds the thing and reports that the thing works, there is no reason to believe the report.
 
+### Authentication
+
+AIRO MCP takes either. OAuth 2.0 is the interactive path: the client opens a
+browser on first connect and stores the credential itself, so the config needs
+no header at all. An API token is the headless path, passed as
+`Authorization: Bearer <token>`. `.mcp.json.example` shows the OAuth shape.
+
+Dev API MCP takes a bearer token only, minted from an API client. What the
+server can do is whatever tools that API client's role enables, so a read-only
+role keeps the audit side honest by construction.
+
 `.mcp.json` is gitignored because it carries live bearer tokens. Never commit it.
+
+### Other regions
+
+Swap the host. AIRO MCP publishes a per-region endpoint: `app.workato.com`
+(US), plus `app.eu`, `app.jp`, `app.sg`, `app.au`, `app.il`, `app.kr`,
+`app.uk`, and `app.trial` for a Developer Sandbox. The Dev API MCP docs give a
+single `https://app.workato.com/mcp` for every region. Neither is available in
+the CN data centre.
+
+One thing worth not confusing: `app[.region].workato.com` is the **platform**,
+the two servers above. A host like `<server-id>.apim.mcp.workato.com` is an MCP
+server **you built** on Workato, which is what stage 5 of this session
+produces. They are different layers and the URL shapes do not overlap.
 
 ## Layout
 

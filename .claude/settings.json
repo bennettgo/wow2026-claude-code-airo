@@ -1,7 +1,7 @@
 {
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "airo-mcp",
-    "workato-dev-api"
+    "workato-airo-mcp-preview",
+    "workato-dev-api-preview"
   ]
 }

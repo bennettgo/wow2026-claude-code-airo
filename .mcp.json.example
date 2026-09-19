@@ -1,19 +1,19 @@
 {
-  "_comment": "Copy to .mcp.json and fill in real values. .mcp.json is gitignored because these are live bearer tokens. Session outline section 3 walks through obtaining them: https://docs.workato.com/en/airo/mcp and https://docs.workato.com/en/mcp/developer-api-mcp",
+  "_comment": "Copy to .mcp.json and fill in the token. .mcp.json is gitignored. Both URLs below are the Workato preview data centre, which is what this session runs on. For production swap app.preview.workato.com for app.workato.com, or your own region's host. See the README for the full region table.",
+
+  "_comment_airo": "AIRO MCP builds. Over OAuth it needs no header at all: the client opens a browser on first use and stores the credential itself. To use a token instead, add the same Authorization header shape as the Dev API server below.",
 
   "mcpServers": {
-    "airo-mcp": {
+    "workato-airo-mcp-preview": {
       "type": "http",
-      "url": "https://<your-mcp-gateway>.apim.mcp.workato.com",
-      "headers": {
-        "Authorization": "Bearer <AIRO_MCP_TOKEN>"
-      }
+      "url": "https://app.preview.workato.com/airo_mcp"
     },
-    "workato-dev-api": {
+
+    "workato-dev-api-preview": {
       "type": "http",
-      "url": "https://<your-dev-api-gateway>",
+      "url": "https://app.preview.workato.com/mcp",
       "headers": {
-        "Authorization": "Bearer <DEV_API_TOKEN>"
+        "Authorization": "Bearer <PREVIEW_API_CLIENT_TOKEN>"
       }
     }
   }

@@ -4,7 +4,9 @@ Stage-by-stage detail under the [session outline](https://docs.google.com/docume
 
 **Status:** use case and environment decided 2026-09-19. Nothing built yet. Stage designs below are proposals, not rehearsed.
 
-**Environment:** Workato preview, workspace "IDEA Lifestyle Customer Data & Personalization" (325807). Build into project "Idea Lifestyle Conference Demo" (`555710`, folder `583790`), currently empty. Authorized connections: Salesforce `SFDC - DEV` (105904), Slack `Ideal Lifestyle` (105903), REST `TypeSafe AI` (108365).
+**Environment:** Workato preview, workspace "IDEA Lifestyle Customer Data & Personalization" (325807), root folder `577822`, environment Development. Build into project "Idea Lifestyle Conference Demo" (`555710`, folder `583790`), which holds one unrelated recipe today (`1874206`, "Send email to the product line supplier"). Authorized connections: Salesforce `SFDC - DEV` (105904), Slack `Ideal Lifestyle` (105903), REST `TypeSafe AI` (108365).
+
+Both MCP servers point at that workspace. AIRO MCP is `https://app.preview.workato.com/airo_mcp` over OAuth; Dev API MCP is `https://app.preview.workato.com/mcp` with a bearer token. Verified 2026-09-19: the Dev API token resolves to workspace 325807 with root folder 577822, the same workspace AIRO builds into.
 
 ---
 
@@ -55,6 +57,17 @@ Say the division of labour out loud, because the rest of the session depends on 
 - Dev API MCP reads and audits, and never builds anything.
 
 If AIRO both builds the thing and reports that the thing works, there is no reason to believe the report. That is the whole argument for having two.
+
+What is actually on screen:
+
+| Role | Endpoint | Auth |
+|---|---|---|
+| Builds | `https://app.preview.workato.com/airo_mcp` | OAuth, browser prompt on first connect |
+| Audits | `https://app.preview.workato.com/mcp` | Bearer token from an API client |
+
+The Dev API side is worth one sentence out loud: its permissions come from the
+API client role, so the auditing server can be scoped read-only and the split
+stops being a promise about behaviour.
 
 Docs open: https://docs.workato.com/en/airo/mcp and https://docs.workato.com/en/mcp/developer-api-mcp
 
@@ -141,8 +154,15 @@ Likely replacements worth planting: why a Genie rather than a routing rule for t
 ## Open items
 
 - [x] ~~Verify the Salesforce dev org supports the design.~~ Done 2026-09-19. The `get_ticket_status` skill was built, pushed and tested green against `SFDC - DEV`. Salesforce connects, the Case object is queryable, and a valid SOQL query returns cleanly. Recipe `1874274`, Skill `skl-Abe89XRW-Ct3w3E-B6`, job `j-Abe89tRx-n36Mae-B6`.
-- [ ] **Fix the project grant gap on "Idea Lifestyle Conference Demo" (555710, folder 583790).** Reads see the folder; every `workspace_push` to it fails with `Folder with id '583790' was not found`. The same push into folder `578470` succeeded immediately, so this is authorization, not tooling. Until it is fixed, assets land in the wrong project.
-- [ ] **Move `get_ticket_status` into the conference demo project** once the grant is fixed. It currently sits in `578470`, the retired stub folder, purely because that folder accepted the push.
+- [ ] **Fix the project grant gap on "Idea Lifestyle Conference Demo" (555710, folder 583790).** Diagnosed 2026-09-19 via the Dev API, and it is a one-line fix by someone with the rights.
+
+  | Project | Sole grant | Push |
+  |---|---|---|
+  | 552603 "AIRO + Claude Code" | Bennett Goh, Project admin | succeeds |
+  | 555710 "Idea Lifestyle Conference Demo" | Loma Desai, Project admin | fails |
+
+  Reads see folder `583790` fine, because reads and writes authorize differently. Writes fail with `Folder with id '583790' was not found`, which is a misleading message for "you have no grant here". **Fix:** add Bennett Goh (member `3218`) as Project admin on project `555710`. Loma Desai or a workspace admin can do it. Until then assets land in the wrong project.
+- [ ] **Move `get_ticket_status` into the conference demo project** once the grant is fixed. It sits in folder `578470`, project `552603` "AIRO + Claude Code", purely because that is the project Bennett is granted on. That project also holds the two retired stub MCP servers.
 - [ ] **Seed Salesforce Cases.** The org has no case `00001026`, and the demo needs specific legible tickets anyway (a chiller repair at a named store, not whatever a dev org happens to hold). Confirm how many Cases exist today, then seed the handful the talk track names.
 - [ ] Seed store data. `get_store_details` needs a Data Table of stores, and the Cases need to reference them.
 - [ ] Write the store operations policy documents for the stage 6 Knowledge Base.

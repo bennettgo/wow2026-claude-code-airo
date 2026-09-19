@@ -13,11 +13,16 @@ Several Workato MCP servers can be connected at once and they do **not** all rea
 
 Verified 2026-09-18:
 
-| MCP server | Deployment | Workspace |
+| MCP server | Endpoint | Workspace |
 |---|---|---|
-| `workato-airo-mcp-preview` | preview.workato.com | PE Copilot preview |
-| `workato-airo-mcp-server` | app.workato.com | IDEA Supplier Management |
-| `workato-dev-api` | app.workato.com | IDEA Supplier Management |
+| `workato-airo-mcp-preview` | `app.preview.workato.com/airo_mcp` | IDEA Lifestyle Customer Data & Personalization, 325807, root 577822 |
+| `workato-dev-api-preview` | `app.preview.workato.com/mcp` | same, 325807 |
+| `workato-airo-mcp-server` | `app.workato.com/airo_mcp` | IDEA Supplier Management |
+| `workato-dev-api` | `app.workato.com/mcp` | IDEA Supplier Management |
+
+Corrected 2026-09-19. An earlier version of this table called the preview
+workspace "PE Copilot preview". It is 325807, and `GET /api/users/me` on the
+preview Dev API token confirms it.
 
 A 404 from `mcp_server_get`, or `recipe_list` returning 0 for a folder you can see in the UI, usually means wrong endpoint rather than deleted asset. Confirm with `get_users_me` (Dev API) or `folder_list`, and compare root folder IDs.
 
@@ -28,6 +33,18 @@ A recipe using the `workato_skill` trigger needs an explicit `"config": "[]"` fi
 ## "Folder not found" on push when the folder plainly exists
 
 If `workspace_push` fails with `Folder with id 'NNN' was not found` while `folder.list` and `project.list` both return that folder, it is a project grant gap, not a missing folder. The read path and the write path use different authorization. Verified 2026-09-19: folder `583790` listed fine and refused every push, while `578470` accepted one immediately.
+
+Confirm it rather than guessing, with the Dev API:
+
+```
+GET /api/projects/{project_id}/project_grants
+```
+
+It returns every grant on the project with the role and the user. Compare a
+project that accepts your pushes against the one that refuses them. Verified
+2026-09-19: project `552603` listed the pushing user as Project admin and
+accepted pushes, project `555710` listed a different person as its only grant
+and refused every one.
 
 Fix it by granting the pushing identity access to that project. Do not work around it by building somewhere else and moving assets later.
 

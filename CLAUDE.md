@@ -34,7 +34,7 @@ Decided 2026-09-19.
 
 It satisfies the outline's three constraints. It introduces in about 90 seconds, the skills are ones a store manager would genuinely want in Claude Desktop, and ticket triage gives an honest reason to run unattended.
 
-**Environment: Workato preview, workspace "IDEA Lifestyle Customer Data & Personalization" (325807).** Root folder `577822`. Build into project **"Idea Lifestyle Conference Demo"** (project `555710`, folder `583790`), which exists and is empty.
+**Environment: Workato preview, workspace "IDEA Lifestyle Customer Data & Personalization" (325807).** Root folder `577822`. Build into project **"Idea Lifestyle Conference Demo"** (project `555710`, folder `583790`). It holds one unrelated recipe (`1874206`), and pushes to it are currently blocked by a missing project grant. See the runbook open items.
 
 Authorized connections there, verified 2026-09-19. Design within these:
 
@@ -47,6 +47,17 @@ Authorized connections there, verified 2026-09-19. Design within these:
 `Loma's Datadog Connection` (105619) exists but was never authorized. Anything else needs creating first.
 
 Salesforce Cases carry the tickets, Slack carries escalation, and Workato Data Tables plus a Knowledge Base carry store and policy data. The previous sell-through drift storyline was retired on 2026-09-19 and is recoverable from commit `a9b4f8b`.
+
+## MCP endpoints
+
+Both servers reach workspace 325807. Verified 2026-09-19.
+
+| Role | Endpoint | Auth |
+|---|---|---|
+| AIRO MCP, builds | `https://app.preview.workato.com/airo_mcp` | OAuth, no header in config |
+| Dev API MCP, audits | `https://app.preview.workato.com/mcp` | `Authorization: Bearer <token>` |
+
+`.mcp.json.example` carries both with placeholders. The live `.mcp.json` is gitignored.
 
 ## Secrets
 
