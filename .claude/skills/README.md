@@ -16,16 +16,19 @@ Copied on 2026-09-19 so the repo is self-contained. **They are snapshots and wil
 
 | Skill | Source | Why it is here |
 |---|---|---|
-| `unslop` | `~/.claude/skills` | CLAUDE.md requires it for everything written here. The talk track is spoken aloud, so filler that survives in a doc is audible in a room. |
-| `my-writing-style` | `~/.claude/skills` | Paired with `unslop` for anything in Bennett's voice. |
 | `workato-genie-builder` | `~/.claude/skills` | Stage 6 builds a Genie, attaches skills and KBs, and mints a client. |
 | `workato-kb-ingest` | `~/.claude/skills` | Stage 6 attaches a Knowledge Base of store operations policy. Covers the fact that `POST /api/files` does not exist and what to do instead. |
-| `workato-genie-benchmark` | `~/.claude/skills` | Stage 7 wants regression checks against the Genie. This is the systematic version of that. |
 | `building-workato-mcp-apps` | `wapl/workato-mcp-apps` plugin | Stage 5 stands up an MCP server and connects a client to it. Note this skill is primarily about interactive MCP *apps*; use it for the server setup and client connection parts. |
+
+Everything vendored here is about building Workato assets. That is the line: skills this repo's *work* needs, not skills its author happens to use.
 
 ## Deliberately not vendored
 
-`writing-workato-prds` and `updating-workato-prds`, because the session has no PRD beat. `pptx` at 1.3MB, because it is general-purpose and available globally. `skill-creator`, for the same reason.
+`unslop` and `my-writing-style` stay personal. CLAUDE.md still requires them for anything written here, but they are Bennett's own writing preferences and they load from the personal skills folder. Vendoring them would impose one person's voice on everyone who clones the repo.
+
+`workato-genie-benchmark` is heavier machinery than stage 7 needs. It is built for scoring a Genie against a published third-party benchmark with a judge Genie and retrieval metrics. Stage 7 wants regression checks, which is a smaller thing. Reach for the skill from the personal folder if the scope grows.
+
+Also out: `writing-workato-prds` and `updating-workato-prds`, because the session has no PRD beat. `pptx` at 1.3MB, because it is general-purpose. `skill-creator`, for the same reason.
 
 ## Refreshing a vendored skill
 

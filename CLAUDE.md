@@ -58,9 +58,9 @@ Six live bearer tokens were found in this folder on 2026-09-19. `.mcp.json`, `.c
 
 ## Working agreements
 
-- **Apply the `unslop` skill to everything written here.** Runbook, talk track, README, commit messages, anything a human reads. This matters more than usual because the talk track is spoken aloud, and filler that survives in a doc is audible in a room. Pair with `my-writing-style` for anything in Bennett's voice. Both skills are vendored into `.claude/skills/`, so they load automatically in this folder.
+- **Apply the `unslop` skill to everything written here.** Runbook, talk track, README, commit messages, anything a human reads. This matters more than usual because the talk track is spoken aloud, and filler that survives in a doc is audible in a room. Pair with `my-writing-style` for anything in Bennett's voice. Both load from the personal skills folder and are deliberately not vendored here.
 - **Read `.claude/skills/workato-airo-build-notes/` before building Workato assets through MCP.** It holds the gotchas that cost hours to rediscover: the `config: []` requirement, skill-handle attachment, which MCP reaches which workspace, and why `get_recipe_test_status` cannot be trusted.
-- **`.claude/skills/README.md` indexes the rest.** Skills for building Genies, ingesting Knowledge Bases, standing up MCP servers, and benchmarking a Genie are all vendored here. They are snapshots taken 2026-09-19 and will drift from upstream.
+- **`.claude/skills/README.md` indexes the rest.** Skills for building Genies, ingesting Knowledge Bases and standing up MCP servers are vendored so the repo is self-contained for the build. They are snapshots taken 2026-09-19 and will drift from upstream.
 - **Verify against the live workspace before claiming something works.** Every number and behaviour shown on stage must be reproducible with a tool call.
 - **Do not invent brand names.** Branchwood and IDEAONE House are canon within IDEA Lifestyle if the new use case needs suppliers.
 - Open items live in `docs/runbook.md`. Do not fork them into side files.
