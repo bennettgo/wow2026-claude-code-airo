@@ -1,7 +1,7 @@
 {
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "sales-inventory-mcp",
-    "crm-promotions-mcp"
+    "airo-mcp",
+    "workato-dev-api"
   ]
 }
