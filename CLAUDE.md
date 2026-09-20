@@ -1,16 +1,16 @@
-# WoW 2026 - Claude Code + AIRO: session repo
+# WoW 2026 - Claude Code + AIRO: demo repo
 
-This repo backs the 45-minute breakout **"Claude Code + AIRO: From Vibe Coding to Production, Live."** It is also a demo artifact in its own right: outline section 7 ends by pushing this repo so a teammate can pick up where the session left off. Treat it as something a stranger will clone.
+This repo backs the 45-minute breakout **"Claude Code + AIRO: From Vibe Coding to Production, Live."** It is also a demo artifact in its own right: outline section 7 ends by pushing this repo so a teammate can pick up where the talk left off. Treat it as something a stranger will clone.
 
 Fictional company: **IDEA Lifestyle**, a $47B home-furnishings retailer, 800+ stores, 50+ countries.
 
 ## Source of truth
 
-1. **The session outline Google Doc governs the flow.** [WoW2026: Claude Code + AIRO](https://docs.google.com/document/d/1Gx5TYPLl88pTPg0le_ShjRXq5jLHZOJcvcdmBiGyTlc). If this repo and the doc disagree about structure, the doc wins. Do not fork a local copy of it.
+1. **The outline Google Doc governs the flow.** [WoW2026: Claude Code + AIRO](https://docs.google.com/document/d/1Gx5TYPLl88pTPg0le_ShjRXq5jLHZOJcvcdmBiGyTlc). If this repo and the doc disagree about structure, the doc wins. Do not fork a local copy of it.
 2. `docs/runbook.md` is the stage-by-stage execution detail *under* that outline. It implements the doc; it does not override it.
 3. `README.md` is the repo index. If you add or rename a top-level file, update it.
 
-## Session flow
+## Flow
 
 Four verbs, in order. Each stage adds one capability and reuses the last.
 
@@ -30,11 +30,11 @@ Co-speaker: Abhishek Bhattacherjee.
 
 Decided 2026-09-19.
 
-**Store operations desk.** IDEA Lifestyle runs 800+ stores. A store manager's day is full of small operational questions and requests: damaged stock, facilities faults, staffing approvals. Today that means digging through a policy portal or emailing head office. The session builds the desk that answers them.
+**Store operations desk.** IDEA Lifestyle runs 800+ stores. A store manager's day is full of small operational questions and requests: damaged stock, facilities faults, staffing approvals. Today that means digging through a policy portal or emailing head office. This repo builds the desk that answers them.
 
 It satisfies the outline's three constraints. It introduces in about 90 seconds, the skills are ones a store manager would genuinely want in Claude Desktop, and ticket triage gives an honest reason to run unattended.
 
-**Environment: Workato preview, workspace "IDEA Lifestyle Customer Data & Personalization" (325807).** Root folder `577822`. Build into project **"AIRO + Claude Code - WoW 2026"** (project `555716`, folder `583806`), with subfolders `Test Runs` (`583807`) and `Store Ops Desk` (`583808`). The earlier plan to use project `555710` is dropped: that project holds Loma Desai's own finished build, not ours to write into. See the runbook for what is built and what is still open.
+**Environment: workspace "IDEA Lifestyle Customer Data & Personalization" (325807), reached through `workato-airo-mcp-preview` and `workato-dev-api-preview`.** Root folder `577822`. Build into project **"AIRO + Claude Code - WoW 2026"** (project `555716`, folder `583806`), with subfolders `Test Runs` (`583807`) and `Store Ops Desk` (`583808`). The earlier plan to use project `555710` is dropped: that project holds Loma Desai's own finished build, not ours to write into. See the runbook for what is built and what is still open.
 
 Authorized connections there, verified 2026-09-19. Design within these:
 
@@ -50,12 +50,12 @@ Salesforce Cases carry the tickets, Slack carries escalation, and Workato Data T
 
 ## MCP endpoints
 
-Both servers reach workspace 325807. Verified 2026-09-19.
+Both reach workspace 325807. Verified 2026-09-19.
 
-| Role | Endpoint | Auth |
-|---|---|---|
-| AIRO MCP, builds | `https://app.preview.workato.com/airo_mcp` | OAuth, no header in config |
-| Dev API MCP, audits | `https://app.preview.workato.com/mcp` | `Authorization: Bearer <token>` |
+| Server | Role | Endpoint | Auth |
+|---|---|---|---|
+| `workato-airo-mcp-preview` | builds | `https://app.preview.workato.com/airo_mcp` | OAuth, no header in config |
+| `workato-dev-api-preview` | audits | `https://app.preview.workato.com/mcp` | `Authorization: Bearer <token>` |
 
 `.mcp.json.example` carries both with placeholders. The live `.mcp.json` is gitignored.
 
@@ -80,4 +80,4 @@ They all belong to the retired `sales-inventory-mcp` and `crm-promotions-mcp` st
 
 ## Stale references
 
-The [MCP Server & Build Agent Design Spec](https://docs.google.com/document/d/1fyi7zH0w0PEdpnKbrUc1WzZMSa7orIjahBy4_whB1Pw) describes the retired `sales-inventory-mcp` and `crm-promotions-mcp` stub servers. Those servers still exist on the PE Copilot preview workspace (folder 578470) but no longer back this session. Ignore the spec unless the new use case happens to reuse them.
+The [MCP Server & Build Agent Design Spec](https://docs.google.com/document/d/1fyi7zH0w0PEdpnKbrUc1WzZMSa7orIjahBy4_whB1Pw) describes the retired `sales-inventory-mcp` and `crm-promotions-mcp` stub servers. Those servers still exist on the PE Copilot preview workspace (folder 578470) but no longer back this build. Ignore the spec unless the new use case happens to reuse them.

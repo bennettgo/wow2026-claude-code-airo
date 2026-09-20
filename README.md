@@ -1,12 +1,12 @@
 # WoW 2026 - Claude Code + AIRO: From Vibe Coding to Production, Live
 
-Working repo for a 45-minute breakout session. It holds the runbook, the agent skills captured while building, and the scripts used to check that what we built still works.
+Working repo for a 45-minute breakout talk. It holds the runbook, the agent skills captured while building, and the scripts used to check that what we built still works.
 
-The session itself ends by pushing this repo, so it doubles as the demo's final artifact. Someone who clones it should be able to continue the build.
+The talk itself ends by pushing this repo, so it doubles as the demo's final artifact. Someone who clones it should be able to continue the build.
 
-## What the session argues
+## What the talk argues
 
-Vibe coding gets you a working prototype in minutes. Getting that prototype into production with governance, security and observability intact is where projects stall for weeks. The session closes that gap live, one prompt at a time, across four stages: **build**, **scale**, **automate**, **tune**.
+Vibe coding gets you a working prototype in minutes. Getting that prototype into production with governance, security and observability intact is where projects stall for weeks. The talk closes that gap live, one prompt at a time, across four stages: **build**, **scale**, **automate**, **tune**.
 
 Execution Plane covers ideating and building. Control Plane covers verifying and deploying. Execution Plane speed only matters once Control Plane makes it trustworthy.
 
@@ -16,7 +16,7 @@ Execution Plane covers ideating and building. Control Plane covers verifying and
 cp .mcp.json.example .mcp.json
 ```
 
-Then connect the two MCP servers the session runs on. Both live on the Workato
+Then connect the two MCP servers the demo runs on. Both live on the Workato
 preview data centre, because that is where the demo workspace is.
 
 | Role | Server | Endpoint |
@@ -52,7 +52,7 @@ the CN data centre.
 
 One thing worth not confusing: `app[.region].workato.com` is the **platform**,
 the two servers above. A host like `<server-id>.apim.mcp.workato.com` is an MCP
-server **you built** on Workato, which is what stage 5 of this session
+server **you built** on Workato, which is what stage 5 of this build
 produces. They are different layers and the URL shapes do not overlap.
 
 ## Layout
@@ -67,7 +67,7 @@ produces. They are different layers and the URL shapes do not overlap.
 
 ## Source of truth
 
-The [session outline Google Doc](https://docs.google.com/document/d/1Gx5TYPLl88pTPg0le_ShjRXq5jLHZOJcvcdmBiGyTlc) governs the flow. This repo implements it. Where they disagree about structure, the doc wins.
+The [outline Google Doc](https://docs.google.com/document/d/1Gx5TYPLl88pTPg0le_ShjRXq5jLHZOJcvcdmBiGyTlc) governs the flow. This repo implements it. Where they disagree about structure, the doc wins.
 
 `CLAUDE.md` holds the working agreements for anyone, human or agent, making changes here.
 

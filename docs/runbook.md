@@ -1,6 +1,6 @@
 # Runbook - Claude Code + AIRO: From Vibe Coding to Production, Live
 
-Stage-by-stage detail under the [session outline](https://docs.google.com/document/d/1Gx5TYPLl88pTPg0le_ShjRXq5jLHZOJcvcdmBiGyTlc). The outline governs the flow. This file records how each stage runs, what is decided, and what is not.
+Stage-by-stage detail under the [outline](https://docs.google.com/document/d/1Gx5TYPLl88pTPg0le_ShjRXq5jLHZOJcvcdmBiGyTlc). The outline governs the flow. This file records how each stage runs, what is decided, and what is not.
 
 **Status:** stages 4 through 6 rehearsed end to end 2026-09-19, live against the workspace, then rebuilt around John's four jobs to be done and pushed for real 2026-09-20. Every skill below was built, pushed, and tested against the production folder and the live MCP server and Genie; every case number and ID is real. Stages 3, 7, 8 remain proposals. See "Open items" for the cleanup still needed before the real talk.
 
@@ -51,7 +51,7 @@ Keep it boring and legible. It has to carry stages 4 through 6 without being re-
 
 Show the wiring briefly. This is setup, not a tutorial, and the room only needs to believe the connection is real.
 
-Say the division of labour out loud, because the rest of the session depends on it:
+Say the division of labour out loud, because the rest of the talk depends on it:
 
 - AIRO MCP builds and mutates.
 - Dev API MCP reads and audits, and never builds anything.
