@@ -1,6 +1,6 @@
 # Runbook - Claude Code + AIRO: From Vibe Coding to Production, Live
 
-Stage-by-stage detail under the [session outline](https://docs.google.com/document/d/1Gx5TYPLl88pTPg0le_ShjRXq5jLHZOJcvcdmBiGyTlc). The outline governs the flow. This file records how each stage runs, what is decided, and what is not.
+Stage-by-stage detail under the [outline](https://docs.google.com/document/d/1Gx5TYPLl88pTPg0le_ShjRXq5jLHZOJcvcdmBiGyTlc). The outline governs the flow. This file records how each stage runs, what is decided, and what is not.
 
 **Status:** stages 4 through 6 rehearsed end to end 2026-09-19, live against the workspace. Every skill below was built, pushed, and tested; every case number and ID is real. Stages 3, 7, 8 remain proposals. See "Open items" for the cleanup still needed before the real talk.
 
@@ -51,7 +51,7 @@ Keep it boring and legible. It has to carry stages 4 through 6 without being re-
 
 Show the wiring briefly. This is setup, not a tutorial, and the room only needs to believe the connection is real.
 
-Say the division of labour out loud, because the rest of the session depends on it:
+Say the division of labour out loud, because the rest of the talk depends on it:
 
 - AIRO MCP builds and mutates.
 - Dev API MCP reads and audits, and never builds anything.
@@ -161,7 +161,7 @@ Rehearsal build, 2026-09-19, project `555716` / folder `583806`. All five skills
 - [x] ~~Seed store data.~~ Done. Data Table `stores` (numeric id `13564`), four rows, matching the case store names, including a facilities vendor column `get_store_details` reads.
 - [x] ~~Build the five store-ops skills and bundle them into an MCP server.~~ Done and tested individually: `get_ticket_status`, `raise_store_ticket`, `list_my_open_tickets`, `get_store_details`, `notify_ops_channel`. Bundled into MCP server **Store Ops Desk** (`mcps-AbeCb9on-A3k-B6`). One real governance finding along the way: an MCP server can only attach skills from its own project, confirmed by a hard `HTTP 400` when the first attempt referenced a skill built in a different project. `get_ticket_status` had to be rebuilt inside `555716` rather than reused.
 - [x] ~~Build the stage 6 Genie.~~ Done. **Store Ops Assistant** (`gin-AbeCe4wk-RppDtt-B6`), all five skills attached, state `active`, tested live against case `00001289`.
-- [ ] **Write and ingest the stage 6 Knowledge Base content.** The KB (`kb-AbeCeRgf-gwgWcE-B6`, "Store Ops Policy") exists and is attached to the Genie, but it's empty. Uploading a document needs a real Workato File Storage reference from an attachment, which this session didn't have; the heavier `workato-kb-ingest` skill is the fallback if a local folder of policy docs is worth building instead of ad hoc upload. Content itself (returns/damages, facilities SLAs, the approval matrix) still needs writing.
+- [ ] **Write and ingest the stage 6 Knowledge Base content.** The KB (`kb-AbeCeRgf-gwgWcE-B6`, "Store Ops Policy") exists and is attached to the Genie, but it's empty. Uploading a document needs a real Workato File Storage reference from an attachment, which this pass didn't have; the heavier `workato-kb-ingest` skill is the fallback if a local folder of policy docs is worth building instead of ad hoc upload. Content itself (returns/damages, facilities SLAs, the approval matrix) still needs writing.
 - [ ] **Build the case-triggered automation recipe.** Stage 6's last beat, new Case triggers a Genie assignment plus a Slack escalation on High priority, was scoped but not built this pass, to leave time for the slides and script. Straightforward given everything else that's already wired.
 - [ ] **Decide how stage 4 uses this rehearsal's `get_ticket_status`.** It already exists (recipe `1874280`, skill `skl-AbeCbWnX-bJXKsX-B6`). Either delete it before the real talk so stage 4 builds it from nothing on stage, or build the live version into a different folder so the name doesn't collide. See the talk track's note on this.
 - [ ] Rewrite the three stale FAQ entries against store operations.
