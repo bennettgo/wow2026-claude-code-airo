@@ -60,6 +60,7 @@ produces. They are different layers and the URL shapes do not overlap.
 | Path | What it holds |
 |---|---|
 | `docs/runbook.md` | Stage-by-stage execution detail, timings, open items |
+| `docs/stage5-build-brief.md` | Work order for building stage 5 in a second, parallel Claude Code session |
 | `.claude/skills/` | Agent skills captured during the build (outline section 7) |
 | `.claude/settings.json` | MCP auto-approval so a `claude` launch here does not prompt |
 | `.mcp.json.example` | Template for the two MCP connections |

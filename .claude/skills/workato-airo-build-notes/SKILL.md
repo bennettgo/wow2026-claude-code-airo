@@ -28,7 +28,11 @@ A 404 from `mcp_server_get`, or `recipe_list` returning 0 for a folder you can s
 
 ## Creating a skill-triggered recipe
 
-A recipe using the `workato_skill` trigger needs an explicit `"config": "[]"` field at creation. Without it the recipe is created but cannot be started, and the error is `missing adapter configuration: workato_skill`, which does not point at the missing field.
+A recipe using the `workato_skill` trigger needs an explicit `"config": "[]"` field at creation, **when creating it through the raw Dev API path**. Without it the recipe is created but cannot be started, and the error is `missing adapter configuration: workato_skill`, which does not point at the missing field.
+
+Corrected 2026-09-20: this does not apply to the `workspace_init`/`workspace_push` lifecycle on `workato-airo-mcp-preview`. Passing `config=[]` there is rejected outright (`Input field 'config' not found in schema`, code `extended_schema_input_loss`). Omit it; that lifecycle handles it internally. Only add it back if you're building through the older raw-Dev-API recipe-creation path this note originally described.
+
+Also on this lifecycle: a skill's parameters live under the trigger variable, not top-level. If the trigger step is named `trigger_1`, read the input with `trigger_1['parameters']['case_number']`, not `parameters['case_number']`. `recipe.datapill.list` will show you the real path if you're not sure.
 
 ## "Folder not found" on push when the folder plainly exists
 
@@ -78,8 +82,12 @@ Skills have no pollable trigger, so `test_recipe` needs a `trigger_event`. Call 
 
 Verified 2026-09-18 on recipe 1860936:
 
-- **`get_recipe_test_status` lies.** It reported `NO_TEST_RUN` while the test job had already run and succeeded. Do not script it. Go to the job list instead.
+- **`get_recipe_test_status` lies, sometimes.** It reported `NO_TEST_RUN` while the test job had already run and succeeded. Go to the job list instead when you need a trustworthy answer.
 - `recipe.job.list` prints `handle=<unavailable>`, but its `internal_id` works as the `--job-id` argument to `recipe.job.get`.
+
+**Not reliably reproducible, verified 2026-09-20.** A dry run of the same recipe/case pair, testing twice in direct succession, got a correct `COMPLETED`/`succeeded` response from `recipe.test.status` both times, no lie. The bad response above is real and happened once, but it looks timing-dependent rather than a thing you can reliably trigger on demand. Don't script a live demo around forcing it; if it happens, use it, and have a fallback line ready if it doesn't.
+
+**The unguarded not-found warning doesn't visibly clear after you fix it.** It's a static per-index check, not branch-aware: after adding the if/else guard, `unguarded_fixed_index` kept firing on the same line, now inside the `if` branch, even though the fix is correct and `affects_readiness` stays `false` throughout. Don't stage a beat around watching the warning disappear from the panel. The correct framing is "the validator caught this before I ran it," not "the validator now says this is fine."
 
 ```
 workspace_command("recipe.job.list", ["--recipe-id", "<id>", "--limit", "5"])
@@ -101,6 +109,38 @@ workato_skill.start_workflow(parameters_schema)
 Filters address columns by `field_id` (the column UUID), not by name. Read the table definition first to get them. Returned records key their fields by the same UUID with dashes replaced by underscores, which is easy to get wrong when mapping the result.
 
 This is the lowest-risk way to give a skill live, mutable data. A row edited in the table shows up in the next tool call, which hardcoded payloads can never do.
+
+## Picklist metadata can say a value is valid when the org rejects it
+
+Verified 2026-09-20. `recipe.picklist.list` on `Refund.ProcessingMode` returned exactly two options, `Salesforce` and `External`. Setting it to `Salesforce` failed the actual write with `INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST`. `External` worked.
+
+The picklist call reports the connector's generic field metadata, not this org's live restricted-picklist configuration. Treat a `recipe.picklist.list` result as narrowing your options, not as proof a value will be accepted. When a write fails with a restricted-picklist error despite the value coming straight from the picklist call, the fix is to try another listed option, not to assume the field name or the picklist tool is broken.
+
+## Testing a polling-trigger recipe does not force an immediate poll
+
+Verified 2026-09-20, building a `salesforce.new_custom_object(sobject_name='Case', since_offset=0)`-triggered recipe. `recipe.test.start` on it goes `IN_PROGRESS` and stays there through the recipe's real poll interval (default a few minutes), even after a matching record already exists. Passing `trigger_event` has no effect here, same as the documented behavior for webhook recipes: only a genuinely new matching record, found on the recipe's own schedule, produces a job.
+
+Creating a real case that should match (`create_case` tested live, `since_offset` set to "Recipe start") did not produce a job on `recipe.job.list` within roughly four minutes of waiting. Not confirmed whether this is the poll interval running its normal course or something specific to test mode; either way, don't script a live demo beat around "watch the polling recipe fire," the wait is long enough to kill momentum on stage. Verify separately, off-camera, with enough lead time for the real poll interval, or lower `___poll_interval` to its 5-minute minimum and start the recipe for real ahead of the segment rather than testing it live.
+
+## A pushed skill is not started, and its MCP tool stays inactive until it is
+
+Verified 2026-09-20. `workspace_push` on a skill-triggered recipe creates and attaches it, but does not start it. The recipe sits stopped, and its `SkillRecipeMCPTool` entry on any MCP server it's attached to reads `active=False`.
+
+This is easy to miss because `recipe.test.start` still works and looks like proof the skill is live: it bypasses the MCP endpoint entirely and drives the recipe directly. A skill that tests clean can still be unreachable from a real MCP client.
+
+Confirmed the mechanism, not just the symptom: running `recipe.start --recipe-id <id>` on one recipe flipped only that recipe's tool entry to `active=True` on the next `mcp_server` platform read, the other four (still stopped) stayed `active=False`. `active` is a direct mirror of the recipe's running state, nothing else. Start every recipe behind a Skill before treating "attached to the MCP server" as "usable from the MCP server":
+
+```
+workspace_command("recipe.start", ["--recipe-id", "<id>"])
+```
+
+Then re-read the MCP server and confirm every tool you expect to be callable shows `active=True`.
+
+## A new MCP tool must not set name/title/description
+
+Verified 2026-09-20, building the Store Ops Desk MCP server for real. A `SkillRecipeMCPTool` for a skill already on the server can have `name`/`title`/`description` edited directly. A brand-new one cannot: passing them explicitly on an entry with `id=None` is rejected with "new MCP Server tool name, title and description are assigned by Workato."
+
+For a new tool, set only `id=None` and `skill_handle=...`, and leave the rest at their empty defaults. Workato fills in `name`/`title`/`description` from the skill itself on push. Confirm with a platform `workspace_read` afterward, the derived values usually match the skill's own name and description.
 
 ## Checking connections before you build
 
