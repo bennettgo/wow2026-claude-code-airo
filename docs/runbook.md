@@ -2,9 +2,9 @@
 
 Stage-by-stage detail under the [session outline](https://docs.google.com/document/d/1Gx5TYPLl88pTPg0le_ShjRXq5jLHZOJcvcdmBiGyTlc). The outline governs the flow. This file records how each stage runs, what is decided, and what is not.
 
-**Status:** use case and environment decided 2026-09-19. Nothing built yet. Stage designs below are proposals, not rehearsed.
+**Status:** stages 4 through 6 rehearsed end to end 2026-09-19, live against the workspace. Every skill below was built, pushed, and tested; every case number and ID is real. Stages 3, 7, 8 remain proposals. See "Open items" for the cleanup still needed before the real talk.
 
-**Environment:** Workato preview, workspace "IDEA Lifestyle Customer Data & Personalization" (325807), root folder `577822`, environment Development. Build into project "Idea Lifestyle Conference Demo" (`555710`, folder `583790`), which holds one unrelated recipe today (`1874206`, "Send email to the product line supplier"). Authorized connections: Salesforce `SFDC - DEV` (105904), Slack `Ideal Lifestyle` (105903), REST `TypeSafe AI` (108365).
+**Environment:** Workato preview, workspace "IDEA Lifestyle Customer Data & Personalization" (325807), root folder `577822`, environment Development. Build project moved to **"AIRO + Claude Code - WoW 2026"** (`555716`, folder `583806`), created 2026-09-19. This replaces the earlier plan to use `555710` / `583790`: that project turned out to hold a finished, unrelated account-health build owned by Loma Desai, so the grant gap recorded below was never a misconfiguration, it was the correct block on a project that was not ours. `583806` holds two subfolders: `Test Runs` (`583807`) for seeding utilities, `Store Ops Desk` (`583808`) for the real build. Authorized connections: Salesforce `SFDC - DEV` (105904), Slack `Ideal Lifestyle` (105903), REST `TypeSafe AI` (108365).
 
 Both MCP servers point at that workspace. AIRO MCP is `https://app.preview.workato.com/airo_mcp` over OAuth; Dev API MCP is `https://app.preview.workato.com/mcp` with a bearer token. Verified 2026-09-19: the Dev API token resolves to workspace 325807 with root folder 577822, the same workspace AIRO builds into.
 
@@ -153,23 +153,22 @@ Likely replacements worth planting: why a Genie rather than a routing rule for t
 
 ## Open items
 
-- [x] ~~Verify the Salesforce dev org supports the design.~~ Done 2026-09-19. The `get_ticket_status` skill was built, pushed and tested green against `SFDC - DEV`. Salesforce connects, the Case object is queryable, and a valid SOQL query returns cleanly. Recipe `1874274`, Skill `skl-Abe89XRW-Ct3w3E-B6`, job `j-Abe89tRx-n36Mae-B6`.
-- [ ] **Fix the project grant gap on "Idea Lifestyle Conference Demo" (555710, folder 583790).** Diagnosed 2026-09-19 via the Dev API, and it is a one-line fix by someone with the rights.
+Rehearsal build, 2026-09-19, project `555716` / folder `583806`. All five skills are pushed, tested, and verified with real job output, not assumed.
 
-  | Project | Sole grant | Push |
-  |---|---|---|
-  | 552603 "AIRO + Claude Code" | Bennett Goh, Project admin | succeeds |
-  | 555710 "Idea Lifestyle Conference Demo" | Loma Desai, Project admin | fails |
-
-  Reads see folder `583790` fine, because reads and writes authorize differently. Writes fail with `Folder with id '583790' was not found`, which is a misleading message for "you have no grant here". **Fix:** add Bennett Goh (member `3218`) as Project admin on project `555710`. Loma Desai or a workspace admin can do it. Until then assets land in the wrong project.
-- [ ] **Move `get_ticket_status` into the conference demo project** once the grant is fixed. It sits in folder `578470`, project `552603` "AIRO + Claude Code", purely because that is the project Bennett is granted on. That project also holds the two retired stub MCP servers.
-- [ ] **Seed Salesforce Cases.** The org has no case `00001026`, and the demo needs specific legible tickets anyway (a chiller repair at a named store, not whatever a dev org happens to hold). Confirm how many Cases exist today, then seed the handful the talk track names.
-- [ ] Seed store data. `get_store_details` needs a Data Table of stores, and the Cases need to reference them.
-- [ ] Write the store operations policy documents for the stage 6 Knowledge Base.
+- [x] ~~Verify the Salesforce dev org supports the design.~~ Done. Confirmed again in this rehearsal.
+- [x] ~~Fix the project grant gap.~~ Moot. The blocked project (`555710`) was never ours to write into, it holds Loma Desai's account-health build. Moved to a fresh project (`555716`) instead of chasing a grant. See the environment note above.
+- [x] ~~Seed Salesforce Cases.~~ Done. Five real cases: `00001289` (Store 482, chiller failure, High), `00001290` (Store 217, overtime approval, Medium), `00001291` (Store 103, water damage, Medium), `00001292` (Store 356, loading dock door, High), `00001293` (Store 103, register fault, Medium, created live by `raise_store_ticket` during the rehearsal).
+- [x] ~~Seed store data.~~ Done. Data Table `stores` (numeric id `13564`), four rows, matching the case store names, including a facilities vendor column `get_store_details` reads.
+- [x] ~~Build the five store-ops skills and bundle them into an MCP server.~~ Done and tested individually: `get_ticket_status`, `raise_store_ticket`, `list_my_open_tickets`, `get_store_details`, `notify_ops_channel`. Bundled into MCP server **Store Ops Desk** (`mcps-AbeCb9on-A3k-B6`). One real governance finding along the way: an MCP server can only attach skills from its own project, confirmed by a hard `HTTP 400` when the first attempt referenced a skill built in a different project. `get_ticket_status` had to be rebuilt inside `555716` rather than reused.
+- [x] ~~Build the stage 6 Genie.~~ Done. **Store Ops Assistant** (`gin-AbeCe4wk-RppDtt-B6`), all five skills attached, state `active`, tested live against case `00001289`.
+- [ ] **Write and ingest the stage 6 Knowledge Base content.** The KB (`kb-AbeCeRgf-gwgWcE-B6`, "Store Ops Policy") exists and is attached to the Genie, but it's empty. Uploading a document needs a real Workato File Storage reference from an attachment, which this session didn't have; the heavier `workato-kb-ingest` skill is the fallback if a local folder of policy docs is worth building instead of ad hoc upload. Content itself (returns/damages, facilities SLAs, the approval matrix) still needs writing.
+- [ ] **Build the case-triggered automation recipe.** Stage 6's last beat, new Case triggers a Genie assignment plus a Slack escalation on High priority, was scoped but not built this pass, to leave time for the slides and script. Straightforward given everything else that's already wired.
+- [ ] **Decide how stage 4 uses this rehearsal's `get_ticket_status`.** It already exists (recipe `1874280`, skill `skl-AbeCbWnX-bJXKsX-B6`). Either delete it before the real talk so stage 4 builds it from nothing on stage, or build the live version into a different folder so the name doesn't collide. See the talk track's note on this.
 - [ ] Rewrite the three stale FAQ entries against store operations.
 - [ ] Build the regression scripts for stage 7.
+- [x] ~~Journey slides for stages 4, 5, 6 and 7 do not exist yet.~~ Draft content written 2026-09-19: [slide content doc](https://docs.google.com/document/d/1fHm6pUKS-ytpZJJCqXTeeaq45SsKWuZ-unnOqxtiJfA) (not in this repo, per working agreement). Needs pasting into the branded template and a design pass.
+- [x] ~~Write a talk track.~~ Draft written 2026-09-19, stages 1 through 7, Bennett's voice. Local only (`~/Documents/WoW2026-local-drafts/talk-track.md`), not in this repo.
 - [ ] Confirm the proposed timings for stages 3 through 8 against a rehearsal.
-- [ ] Journey slides for stages 4, 5, 6 and 7 do not exist yet.
 - [ ] Confirm co-speaker logistics with Abhishek.
 - [ ] Revoke the two live stub-server tokens (`1e03f322…`, `ff7d7f1c…`, gateways 12572 and 12575). They belong to the retired `sales-inventory-mcp` and `crm-promotions-mcp` servers, are not needed by the store ops build, and are gitignored rather than invalidated. The two in `.codex/config.toml` point at the pre-migration gateways 11680 and 11681 and are already dead; delete them.
 - [ ] Decide whether the two retired stub MCP servers on preview should be deleted outright, now that nothing uses them.

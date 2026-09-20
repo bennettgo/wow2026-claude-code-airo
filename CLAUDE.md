@@ -34,7 +34,7 @@ Decided 2026-09-19.
 
 It satisfies the outline's three constraints. It introduces in about 90 seconds, the skills are ones a store manager would genuinely want in Claude Desktop, and ticket triage gives an honest reason to run unattended.
 
-**Environment: Workato preview, workspace "IDEA Lifestyle Customer Data & Personalization" (325807).** Root folder `577822`. Build into project **"Idea Lifestyle Conference Demo"** (project `555710`, folder `583790`). It holds one unrelated recipe (`1874206`), and pushes to it are currently blocked by a missing project grant. See the runbook open items.
+**Environment: Workato preview, workspace "IDEA Lifestyle Customer Data & Personalization" (325807).** Root folder `577822`. Build into project **"AIRO + Claude Code - WoW 2026"** (project `555716`, folder `583806`), with subfolders `Test Runs` (`583807`) and `Store Ops Desk` (`583808`). The earlier plan to use project `555710` is dropped: that project holds Loma Desai's own finished build, not ours to write into. See the runbook for what is built and what is still open.
 
 Authorized connections there, verified 2026-09-19. Design within these:
 
