@@ -26,6 +26,29 @@ Four verbs, in order. Each stage adds one capability and reuses the last.
 
 Co-speaker: Abhishek Bhattacherjee.
 
+## Running the demo live
+
+Everything else in this file is written for maintaining the repo between talks. This section governs a session that is running the talk, rehearsed or presented. Where it conflicts with the rest of this file, this section wins.
+
+**Default to this section, do not wait to detect that you're on stage.** A fresh session has no way to tell rehearsal from a maintenance request except the shape of the ask. If the user asks you to build, create, or change a Workato asset ("build me a skill that...", "I need an MCP that...", "make it also return..."), that ask itself is the signal — treat it as this section governs, immediately, without asking whether this is a rehearsal or the real thing. Only fall back to the rest of this file when the request is unambiguously about repo maintenance between talks (editing docs, reviewing the runbook, cleaning up open items).
+
+**Build when asked. Do not audit first.** "Build me a skill that checks case statuses" is the script, not an ambiguous request. Do not check whether the asset already exists in production, and do not tell the user it already exists — that framing is exactly the stall this rule exists to prevent. If it exists in production, that is what makes the rehearsal build safe (see below), not a reason to stop and say so. Each stage has about seven minutes and a round of questions costs most of it.
+
+**A rehearsal build is not a duplicate.** Stage 4 rebuilds `get_case_status`, which already exists in production. That is the point: the room watches it get built. Build it in `Test Runs` (`583807`), which leaves the production asset in `Customer Service MCP` (`583808`) untouched. The scratch folder is how the no-duplicates rule is satisfied here, so do not stop to raise it as a conflict.
+
+**Do not ask clarifying questions on stage.** Pick the documented default, name it in one sentence, keep going. A 2026-09-20 rehearsal stalled on three `AskUserQuestion` calls before creating a single asset. If something is genuinely undecided, choose and say so rather than stopping.
+
+**Grounding budget is one file:** `.claude/skills/workato-airo-build-notes/`. The moment a build request lands, load that skill and start building — do not first read the runbook, the build brief, the PRD, or the talk track to check current state, confirm an asset's existence, or decide whether the request is a duplicate. Those files are written for maintaining the repo between talks, not for answering a build request live. If you catch yourself reading `docs/runbook.md` or similar in response to a build ask, stop and build instead.
+
+**Start what you build.** `workspace_push` does not start a recipe, and an unstarted recipe's MCP tool reads `active=False` and is unreachable from a real client. `recipe.test.start` passes anyway, which hides it. Run `recipe.start` before claiming a teammate can call it.
+
+| Stage | What the prompt asks for | Build into |
+|---|---|---|
+| 4, Build | One skill, case lookup by number, then change it and re-test | `Test Runs` (`583807`) |
+| 5, Scale | John's remaining jobs in one pass, bundled into an MCP server | `Test Runs`, or show the built production set |
+| 6, Automate | A Genie over those skills plus the policy KB, then a recipe running it unattended | already built, see the runbook |
+| 7, Tune | Save the gotchas as agent skills, push the repo | this repo |
+
 ## Use case and environment
 
 Decided 2026-09-19.
@@ -34,7 +57,7 @@ Decided 2026-09-19.
 
 It satisfies the outline's three constraints. It introduces in about 90 seconds, the skills are ones a store manager would genuinely want in Claude Desktop, and ticket triage gives an honest reason to run unattended.
 
-**Environment: workspace "IDEA Lifestyle Customer Data & Personalization" (325807), reached through `workato-airo-mcp-preview` and `workato-dev-api-preview`.** Root folder `577822`. Build into project **"AIRO + Claude Code - WoW 2026"** (project `555716`, folder `583806`), with subfolders `Test Runs` (`583807`) and `Store Ops Desk` (`583808`). The earlier plan to use project `555710` is dropped: that project holds Loma Desai's own finished build, not ours to write into. See the runbook for what is built and what is still open.
+**Environment: workspace "IDEA Lifestyle Customer Data & Personalization" (325807), reached through `workato-airo-mcp-preview` and `workato-dev-api-preview`.** Root folder `577822`. Build into project **"AIRO + Claude Code - WoW 2026"** (project `555716`, folder `583806`), with subfolders `Test Runs` (`583807`) for rehearsal builds and seeding utilities, and `Customer Service MCP` (`583808`) for the real assets. The earlier plan to use project `555710` is dropped: that project holds Loma Desai's own finished build, not ours to write into. See the runbook for what is built and what is still open.
 
 Authorized connections there, verified 2026-09-19. Design within these:
 
@@ -52,12 +75,14 @@ Salesforce Cases carry the tickets, Slack carries escalation, and Workato Data T
 
 Both reach workspace 325807. Verified 2026-09-19.
 
-| Server | Role | Endpoint | Auth |
-|---|---|---|---|
-| `workato-airo-mcp-preview` | builds | `https://app.preview.workato.com/airo_mcp` | OAuth, no header in config |
-| `workato-dev-api-preview` | audits | `https://app.preview.workato.com/mcp` | `Authorization: Bearer <token>` |
+| Server | Role | Endpoint | Auth | Docs |
+|---|---|---|---|---|
+| `workato-airo-mcp-preview` | builds | `https://app.preview.workato.com/airo_mcp` | OAuth, no header in config | https://docs.workato.com/en/airo/mcp |
+| `workato-dev-api-preview` | audits | `https://app.preview.workato.com/mcp` | `Authorization: Bearer <token>` | https://docs.workato.com/en/mcp/developer-api-mcp |
 
 `.mcp.json.example` carries both with placeholders. The live `.mcp.json` is gitignored.
+
+When introducing either server for the first time in a conversation, include its docs link from the table above.
 
 ## Secrets
 
