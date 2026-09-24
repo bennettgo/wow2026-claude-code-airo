@@ -34,17 +34,27 @@ Everything else in this file is written for maintaining the repo between talks. 
 
 **Build when asked. Do not audit first.** "Build me a skill that checks case statuses" is the script, not an ambiguous request. Do not check whether the asset already exists in production, and do not tell the user it already exists — that framing is exactly the stall this rule exists to prevent. If it exists in production, that is what makes the rehearsal build safe (see below), not a reason to stop and say so. Each stage has about seven minutes and a round of questions costs most of it.
 
-**A rehearsal build is not a duplicate.** Stage 4 rebuilds `get_case_status`, which already exists in production. That is the point: the room watches it get built. Build it in `Test Runs` (`583807`), which leaves the production asset in `Customer Service MCP` (`583808`) untouched. The scratch folder is how the no-duplicates rule is satisfied here, so do not stop to raise it as a conflict.
+**A rehearsal build is not a duplicate.** Stage 4 rebuilds `get_case_status`. Build it in `Test Runs` (`583843` as of 2026-09-20; see the note above if this 404s), which leaves anything in `Customer Service MCP` untouched. The scratch folder is how the no-duplicates rule is satisfied here, so do not stop to raise it as a conflict.
 
 **Do not ask clarifying questions on stage.** Pick the documented default, name it in one sentence, keep going. A 2026-09-20 rehearsal stalled on three `AskUserQuestion` calls before creating a single asset. If something is genuinely undecided, choose and say so rather than stopping.
 
+**Exception: always confirm which connection a new step uses, even when only one is authorized for that provider.** Bennett does not treat "it's the only one listed" as implicit consent — asked explicitly on 2026-09-20 not to assume `SFDC - DEV` (`105904`) is fine just because it is the sole authorized Salesforce connection in the table above. State the connection you are about to attach, by name and ID, and wait for a yes before pushing the step. This is the one deliberate exception to "do not ask clarifying questions" in this section.
+
 **Grounding budget is one file:** `.claude/skills/workato-airo-build-notes/`. The moment a build request lands, load that skill and start building — do not first read the runbook, the build brief, the PRD, or the talk track to check current state, confirm an asset's existence, or decide whether the request is a duplicate. Those files are written for maintaining the repo between talks, not for answering a build request live. If you catch yourself reading `docs/runbook.md` or similar in response to a build ask, stop and build instead.
+
+**Read the build notes silently, don't narrate them.** The build notes skill exists to make you build correctly, not to give you talking points. Don't volunteer a past bug, a forced-failure story, or "this broke before" framing while building live, even when a gotcha entry explains exactly what you're doing. The talk track deliberately dropped its staged-failure beats; don't put them back by narrating from this file instead. If asked directly what a gotcha was, answer it. Don't bring one up unprompted.
 
 **Start what you build.** `workspace_push` does not start a recipe, and an unstarted recipe's MCP tool reads `active=False` and is unreachable from a real client. `recipe.test.start` passes anyway, which hides it. Run `recipe.start` before claiming a teammate can call it.
 
+**"Show me the recipe/jobs" means give the link, not paste the DSL.** Bennett corrected this 2026-09-20: don't dump the recipe's Python-like source or job JSON into chat when asked to show it. Give the `recipe.url` link (and the job's page, same link) and let him look at it on screen. This is separate from stage 4's own "read the recipe logic on screen" beat, which means opening that link live, not pasting code into the transcript.
+
+**A 404 on a previously-built asset is expected, not a finding.** Bennett deletes the production build between rehearsals on purpose, so recipes, the Genie, the MCP server, and even the `Test Runs`/`Customer Service MCP` subfolders this file names by ID can all be gone at the start of a session. Confirmed 2026-09-20: everything from that day's "done" build 404'd, and the cause was an intentional reset, not a platform bug. Don't stop to investigate or report this as broken — recreate whatever folder is missing (`POST /folders` on the Dev API, same parent `583806`) and rebuild. Do update the folder ID in this file and the runbook once you've recreated it, since a stale ID costs the next session the same lookup.
+
 | Stage | What the prompt asks for | Build into |
 |---|---|---|
-| 4, Build | One skill, case lookup by number, then change it and re-test | `Test Runs` (`583807`) |
+| 4, Build | One skill, case lookup by number, then change it and re-test | `Test Runs` (`583843` as of 2026-09-20) |
+
+Stage 4's follow-up asks (add a field, also return the owner, also return the last comment) are the scripted change beat itself, not separate side requests — build them the same way, without re-litigating whether they're in scope. When a skill branches on whether a record was found, guard on a field only present in a real match (`search_sobjects_2['Case'][0]['Id']`), never on a count/size pill (`list_size`) — the platform treats a size pill's string form as always "present," so a `list_size`-guarded not-found branch silently never triggers. See the build notes for the full story; this cost real debugging time once and should not happen again.
 | 5, Scale | John's remaining jobs in one pass, bundled into an MCP server | `Test Runs`, or show the built production set |
 | 6, Automate | A Genie over those skills plus the policy KB, then a recipe running it unattended | already built, see the runbook |
 | 7, Tune | Save the gotchas as agent skills, push the repo | this repo |
@@ -57,7 +67,7 @@ Decided 2026-09-19.
 
 It satisfies the outline's three constraints. It introduces in about 90 seconds, the skills are ones a store manager would genuinely want in Claude Desktop, and ticket triage gives an honest reason to run unattended.
 
-**Environment: workspace "IDEA Lifestyle Customer Data & Personalization" (325807), reached through `workato-airo-mcp-preview` and `workato-dev-api-preview`.** Root folder `577822`. Build into project **"AIRO + Claude Code - WoW 2026"** (project `555716`, folder `583806`), with subfolders `Test Runs` (`583807`) for rehearsal builds and seeding utilities, and `Customer Service MCP` (`583808`) for the real assets. The earlier plan to use project `555710` is dropped: that project holds Loma Desai's own finished build, not ours to write into. See the runbook for what is built and what is still open.
+**Environment: workspace "IDEA Lifestyle Customer Data & Personalization" (325807), reached through `workato-airo-mcp-preview` and `workato-dev-api-preview`.** Root folder `577822`. Build into project **"AIRO + Claude Code - WoW 2026"** (project `555716`, folder `583806`), with subfolders `Test Runs` (`583843` as of 2026-09-20) for rehearsal builds and seeding utilities, and `Customer Service MCP` for the real assets (recreate under `583806` if missing; see "A 404 on a previously-built asset is expected" above). The earlier plan to use project `555710` is dropped: that project holds Loma Desai's own finished build, not ours to write into. See the runbook for what is built and what is still open.
 
 Authorized connections there, verified 2026-09-19. Design within these:
 

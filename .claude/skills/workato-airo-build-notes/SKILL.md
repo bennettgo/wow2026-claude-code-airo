@@ -1,6 +1,6 @@
 ---
 name: workato-airo-build-notes
-description: Hard-won gotchas for building Workato assets through the AIRO MCP and Dev API MCP, covering skill creation, MCP server attachment, token minting, testing, job logs, and data-table-backed skills. Use whenever creating or debugging a Workato Skill, MCP server, Genie, or recipe through an MCP tool, or when an AIRO call fails in a way the error message does not explain.
+description: Hard-won gotchas for building Workato assets through the AIRO MCP and Dev API MCP, covering skill creation, MCP server attachment, token minting, testing, job logs, verifying a skill's actual return data, and data-table-backed skills. Use whenever creating or debugging a Workato Skill, MCP server, Genie, or recipe through an MCP tool, whenever verifying that a skill returns correct data, or when an AIRO call fails in a way the error message does not explain.
 ---
 
 # Workato AIRO build notes
@@ -138,7 +138,7 @@ Then re-read the MCP server and confirm every tool you expect to be callable sho
 
 ## A new MCP tool must not set name/title/description
 
-Verified 2026-09-20, building the Store Ops Desk MCP server for real. A `SkillRecipeMCPTool` for a skill already on the server can have `name`/`title`/`description` edited directly. A brand-new one cannot: passing them explicitly on an entry with `id=None` is rejected with "new MCP Server tool name, title and description are assigned by Workato."
+Verified 2026-09-20, building the Customer Service MCP server for real. A `SkillRecipeMCPTool` for a skill already on the server can have `name`/`title`/`description` edited directly. A brand-new one cannot: passing them explicitly on an entry with `id=None` is rejected with "new MCP Server tool name, title and description are assigned by Workato."
 
 For a new tool, set only `id=None` and `skill_handle=...`, and leave the rest at their empty defaults. Workato fills in `name`/`title`/`description` from the skill itself on push. Confirm with a platform `workspace_read` afterward, the derived values usually match the skill's own name and description.
 
@@ -151,3 +151,76 @@ workspace_command("connection.list", ["--provider", "salesforce", "slack", "nets
 ```
 
 On the Dev API side, `GET /connections` returns everything with an `authorization_status`, and `connection_lost_at` tells you when a working connection broke.
+
+## "Job succeeded" is not "the skill returned the right data"
+
+Verified 2026-09-20, debugging `get_case_status`. A job with `status='succeeded'` and no `error` only means every step executed without throwing — it says nothing about whether `workflow_return_result` carried the data the caller actually needed. A skill that always takes its "not found" branch, or whose `result={...}` silently resolves to empty/wrong values, still reports `succeeded`.
+
+Do not call a skill verified until you've read the actual `result` payload on the `workflow_return_result` line, for both branches, against input that is known to exist. A guessed test value (a hint-text example, a number copied from a sibling skill) is not evidence — it produced a legitimate `found: false` here that looked like a bug until it was traced to the input, not the recipe.
+
+To find a real value to test with when you don't have one: temporarily broaden the query (drop the `WHERE` filter that depends on the untested parameter, keep `LIMIT 1`), push, run one test, read the real record back, then restore the original filter and push again. `workspace_push` refuses a running recipe (`Cannot edit recipe ... because it is running`) — `recipe.stop` first, edit, push, `recipe.start` again.
+
+## `get_recipe_test_status` cannot be trusted — use the Dev API job endpoint instead
+
+Extends the existing "Reading job logs" note above. In one full debugging session, `get_recipe_test_status` and `test_recipe`'s own returned status both reported `NO_TEST_RUN` on **every single poll**, dozens of times, immediately after `recipe.job.list` confirmed a job existed and had `completed`. This was not the occasional timing-dependent lie the earlier note describes — it never once resolved correctly that session.
+
+Two more limits on the preview AIRO MCP's own job tools: `workspace_command("recipe.job.get", ...)` only returns a summary (`status`, `timings`, `steps` count) when given the `internal_id` from `recipe.job.list` — its own dynamic help says it wants the real `handle`, which `recipe.job.list` always prints as `<unavailable>` for these jobs. There is no way to get per-step input/output through the preview AIRO MCP alone.
+
+The reliable path is the **Dev API**, specifically `workato-dev-api-preview` (not `workato-dev-api`, not `workato-airo-mcp-server`'s `job_get`/`job_list` — both of those reach a different, wrong workspace; confirm with `get_users_me` first, `team_name` must read the Customer Data & Personalization workspace):
+
+```
+get_recipes_jobs(recipe_id=<id>)                    # lists jobs, gives real handles
+get_recipes_jobs_(recipe_id=<id>, id=<job handle>)   # full per-step input/output, every time
+```
+
+`get_recipes_jobs_`'s `lines[]` gives each step's `adapter_name`, `adapter_operation`, `input`, and `output` — including the exact `result` object a `workflow_return_result` step sent and what the platform recorded back. This is the only tool in this workspace that reliably shows you what a skill actually returned.
+
+## `workato-dev-api-preview` can be configured correctly and still not connect
+
+If `.mcp.json` has the right URL and token but the server never shows up as a usable tool prefix in a session, check `claude mcp get workato-dev-api-preview` before suspecting the token. A `Status: ✘ Rejected (see disabledMcpjsonServers in settings)` means a project-scoped MCP server was declined in a permission prompt at some point (possibly by a different session, possibly this one) — not a credential problem. Fix:
+
+```bash
+claude mcp reset-project-choices
+```
+
+then start a new `claude` session in the project directory and approve the prompt for both project `.mcp.json` servers. Also note `claude mcp list` only shows project-scoped servers when run **from inside the project directory** — run elsewhere, it silently shows only the global/user-level roster, which can look like the project server doesn't exist at all.
+
+## Giving links to workspace assets
+
+Use bare `preview.workato.com`, no `app.` subdomain (`https://preview.workato.com/recipes/<id>`, `.../recipes?fid=<folder_id>`, `.../recipes/<id>/job/<job_handle>`, etc.). Confirmed working 2026-09-20. An earlier version of this note claimed the opposite — that `app.` was required and dropping it broke the link — and that was wrong; corrected after Bennett explicitly asked for bare `preview.workato.com` and confirmed the resulting links worked.
+
+## A skill result field set to `false` fails validation, even though `true` doesn't
+
+Verified 2026-09-20, building `get_case_status` fresh in `Test Runs`. A `result_schema_json` field — tried as both `boolean` type and `string` type holding the literal `"true"`/`"false"` — reports `"Response/Found ... can't be blank"` on `test_recipe`, but only on the branch that sets it to the false-ish value. The identical field set to `true` in the sibling branch validates fine. This reproduced across four separate attempts: boolean `True`/`False`, string `"true"`/`"false"` (which the platform's own canonicalizer silently rewrites back into Python `True`/`False` in the pretty-printed source on every push, regardless of the field's declared type), and two different guard-condition rewrites. The value, not the condition, is the trigger.
+
+Workaround: don't use `true`/`false`-shaped values for a result field at all. Rename them to something the canonicalizer won't pattern-match as a boolean, for example `"yes"`/`"no"`. That resolved it immediately with no other change. If a skill's result needs a real found/not-found flag, treat it as one of these string sentinels rather than a `boolean` field.
+
+Separately: the `unguarded_fixed_index` static warning (see the entry above) also disappears and reappears depending on how the guard condition is written — `if search_sobjects_2['list_size']:` (a bare truthy check on the raw datapill) satisfies the analyzer, while `if f"{search_sobjects_2['list_size']}" != 0` (the platform's own auto-wrapped form, string-interpolated pill compared to an int) does not, and is also a real bug: a stringified pill is never `!= 0` as far as the comparison is concerned, so that guard is dead code, not just an unrecognized one. Prefer the bare form.
+
+## A "not found" branch guarded by `list_size` truthiness never actually triggers — confirmed with a live test
+
+Verified 2026-09-20, building the owner/comment fields onto `get_case_status`. This is a bigger version of the note above: it's not just cosmetic, it silently makes the "record not found" branch unreachable, and the recipe still validates clean and "succeeds" on every test.
+
+`if search_sobjects_2['list_size']:` — written bare, exactly as the previous note recommends — gets pushed and pretty-printed back as `if f"{search_sobjects_2['list_size']}":`, every time, regardless of how many times it's rewritten to the bare form first. The platform is evaluating this as "is the pill present/non-blank," not "is it numerically nonzero," and a `list_size` of `0` is still present as the string `"0"`. Proven by testing with a real case number and a nonexistent one back to back: both produced `"condition": true` on the job's `if` line, and the nonexistent-case run then failed downstream (`'Object ID' must be present`) trying to read fields off an empty result, rather than falling into the else branch at all.
+
+**Fix:** don't guard on a count or size pill. Guard on a field that is only present when there's an actual match, e.g. `if search_sobjects_2['Case'][0]['Id']:` instead of `if search_sobjects_2['list_size']:`. Indexing `[0]` into an empty array on this connector returns blank rather than raising, so the presence check works correctly, and it happens to be exactly the expression the `unguarded_fixed_index` warning already suggests writing — that warning was pointing at the real fix the whole time, not just flagging noise.
+
+Same fix applies to a nested "no comments yet" branch guarded by `search_sobjects_soql_5['list_size']`: use `if search_sobjects_soql_5['CaseComment'][0]['CommentBody']:` instead.
+
+**Do not trust a clean `test_recipe` result alone for any branch guarded this way.** Test both the branch that should trigger and the one that shouldn't, with real inputs for each, before calling a not-found/error path verified.
+
+## Referencing multiple different indices of the same array pill in one formula silently collapses them all to `[0]`
+
+Verified 2026-09-20, building `review_open_cases`. Writing `search_sobjects_soql_2['Case'][0]`, `[1]`, and `[2]` together — either as separate values in one `result={...}` dict, or as separate `elif` guard conditions checking `[1]['Id']` and `[2]['Id']` — validates clean, pushes clean, and tests clean. The actual job output showed the **same** first record three times: every `[1]` and `[2]` reference had silently become `[0]` in the platform's own canonicalized copy, confirmed by reading the recipe back after push. The `elif` conditions were affected the same way, so the branch meant to detect "exactly 2 open cases" was actually re-testing "is there at least 1," making the higher-count branches unreachable in a different way than the earlier list_size bug.
+
+This is not the same bug as the `list_size` truthiness issue above — it reproduces even when each guard correctly checks a real presence field (`['Id']`), and it isn't about the guard at all, it's about the platform being unable to keep more than one distinct literal index of the same base array pill straight within a single step or a single set of sibling branches.
+
+**Don't design a skill that needs to enumerate multiple items from one array pill by literal index (`[0]`, `[1]`, `[2]`, ...).** There is no fix found yet that keeps distinct indices distinct through a push. Workarounds that stayed within index `[0]` only, verified to work correctly:
+- Report a count (`list_size`) plus a single most-relevant item (e.g. sorted by priority/date, take `[0]`) rather than a per-item breakdown.
+- A real per-item list would need the `workato_variable` connector's `declare_list`/`insert_to_list`/`foreach` machinery (see `workato-guides/patterns/conditions-and-loops.md` and `workato-guides/connectors/variables.md`) rather than manual indexing — not verified in this workspace yet, budget permitting try that path next time this limitation blocks a real requirement.
+
+**A `ruby(...)` formula argument containing Ruby string interpolation (`#{...}`) failed to parse** as a `workflow_return_result` field value in this same build, reporting `FormulaParseError` with the argument mysteriously prefixed `=` and suffixed `# INVALID RUBY FORMULA`. Not root-caused; a `bindings={...}` bare bindings dict fixed the earlier "must be a dictionary" complaint but the interpolation body itself never got past parsing. Avoid `ruby()` with `#{}` interpolation in a skill result field until this is understood; plain Python-style `f"{pill}"` string building works fine and was used instead everywhere in this build.
+
+## The documented `Test Runs` and `Customer Service MCP` subfolder IDs can go stale
+
+Verified 2026-09-20. `folder.list --parent-id 583806` returned zero items, and both `workspace_read` and the Dev API `get_folders_` 404'd on `583807` (`Test Runs`) and `583808` (`Customer Service MCP`), the IDs recorded throughout this repo's docs. `project.list` still saw the parent project fine, and `get_projects_project_grants` showed the pushing identity as Project admin, so it wasn't a grants problem this time, the subfolders themselves no longer exist on the platform. Recreated `Test Runs` via the Dev API (`POST /folders`, `parent_id=583806`) at a new ID, `583843`. If a push fails with `Folder with id 'NNN' was not found`, check both the grants gotcha above and this one — confirm the folder is actually still there (`get_folders_` on the Dev API is the fastest check) before assuming either cause.
