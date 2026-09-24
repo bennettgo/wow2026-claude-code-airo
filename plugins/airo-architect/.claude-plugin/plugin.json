@@ -1,0 +1,6 @@
+{
+  "name": "airo-architect",
+  "version": "0.1.0",
+  "description": "Conversationally build and test a real Workato solution (genie or recipe) from a plain-language business problem.",
+  "author": { "name": "Bennett Goh" }
+}

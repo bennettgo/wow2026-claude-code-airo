@@ -42,6 +42,20 @@ role keeps the audit side honest by construction.
 
 `.mcp.json` is gitignored because it carries live bearer tokens. Never commit it.
 
+### AIRO Architect plugin
+
+Optional. The plugin is vendored in `plugins/airo-architect/`, so a clone can install it without access to the original source:
+
+```bash
+claude plugin marketplace add ./plugins/airo-architect
+```
+
+```bash
+claude plugin install airo-architect@airo-architect-marketplace
+```
+
+It needs the same two MCP servers as the rest of the repo. Its provisioning scripts read the Dev API token from `DEV_API_TOKEN`, never from a file in the repo. The copy here is a snapshot and will drift from the source.
+
 ### Other regions
 
 Swap the host. AIRO MCP publishes a per-region endpoint: `app.workato.com`
@@ -62,6 +76,7 @@ produces. They are different layers and the URL shapes do not overlap.
 | `docs/runbook.md` | Stage-by-stage execution detail, timings, open items |
 | `docs/stage5-build-brief.md` | Work order for building stage 5 in a second, parallel Claude Code session |
 | `.claude/skills/` | Agent skills captured during the build (outline section 7) |
+| `plugins/airo-architect/` | AIRO Architect plugin: builds and tests a Workato solution from a plain-language problem (groom, research, plan, build/test/iterate). Snapshot of the source at commit `f88a22f`, taken 2026-09-24 |
 | `.claude/settings.json` | MCP auto-approval so a `claude` launch here does not prompt |
 | `.mcp.json.example` | Template for the two MCP connections |
 

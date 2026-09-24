@@ -1,0 +1,15 @@
+{
+  "name": "airo-architect-marketplace",
+  "owner": { "name": "Bennett Goh" },
+  "metadata": {
+    "description": "Local marketplace hosting the airo-architect Workato build-agent plugin."
+  },
+  "plugins": [
+    {
+      "name": "airo-architect",
+      "source": "./",
+      "description": "Conversationally build and test a real Workato solution (agentic genie or traditional recipe) from a plain-language business problem — groom → research → plan → build/test/iterate.",
+      "version": "0.1.0"
+    }
+  ]
+}
