@@ -34,7 +34,7 @@ Everything else in this file is written for maintaining the repo between talks. 
 
 **Build when asked. Do not audit first.** "Build me a skill that checks case statuses" is the script, not an ambiguous request. Do not check whether the asset already exists in production, and do not tell the user it already exists — that framing is exactly the stall this rule exists to prevent. If it exists in production, that is what makes the rehearsal build safe (see below), not a reason to stop and say so. Each stage has about seven minutes and a round of questions costs most of it.
 
-**A rehearsal build is not a duplicate.** Stage 4 rebuilds `get_case_status`. Build it in `Test Runs` (`583843` as of 2026-09-20; see the note above if this 404s), which leaves anything in `Customer Service MCP` untouched. The scratch folder is how the no-duplicates rule is satisfied here, so do not stop to raise it as a conflict.
+**A rehearsal build is not a duplicate.** Stage 4 rebuilds `get_case_status`. Build it in this rehearsal's `Test Runs` subfolder (see "Use case and environment" below for the current project), which leaves anything in `Customer Service MCP` untouched. The scratch folder is how the no-duplicates rule is satisfied here, so do not stop to raise it as a conflict.
 
 **Do not ask clarifying questions on stage.** Pick the documented default, name it in one sentence, keep going. A 2026-09-20 rehearsal stalled on three `AskUserQuestion` calls before creating a single asset. If something is genuinely undecided, choose and say so rather than stopping.
 
@@ -48,11 +48,11 @@ Everything else in this file is written for maintaining the repo between talks. 
 
 **"Show me the recipe/jobs" means give the link, not paste the DSL.** Bennett corrected this 2026-09-20: don't dump the recipe's Python-like source or job JSON into chat when asked to show it. Give the `recipe.url` link (and the job's page, same link) and let him look at it on screen. This is separate from stage 4's own "read the recipe logic on screen" beat, which means opening that link live, not pasting code into the transcript.
 
-**A 404 on a previously-built asset is expected, not a finding.** Bennett deletes the production build between rehearsals on purpose, so recipes, the Genie, the MCP server, and even the `Test Runs`/`Customer Service MCP` subfolders this file names by ID can all be gone at the start of a session. Confirmed 2026-09-20: everything from that day's "done" build 404'd, and the cause was an intentional reset, not a platform bug. Don't stop to investigate or report this as broken — recreate whatever folder is missing (`POST /folders` on the Dev API, same parent `583806`) and rebuild. Do update the folder ID in this file and the runbook once you've recreated it, since a stale ID costs the next session the same lookup.
+**A 404 on a previous rehearsal's project is expected, not a finding.** Each rehearsal gets its own project now (see above), so a recipe, Genie, MCP server, or folder ID from a prior session's project 404ing is exactly what that scheme means, not a platform bug or an accidental deletion. Don't stop to investigate or report this as broken. Don't try to recreate the old ID either, that project belongs to a past rehearsal, create today's new project instead and rebuild there.
 
 | Stage | What the prompt asks for | Build into |
 |---|---|---|
-| 4, Build | One skill, case lookup by number, then change it and re-test | `Test Runs` (`583843` as of 2026-09-20) |
+| 4, Build | One skill, case lookup by number, then change it and re-test | This rehearsal's `Test Runs` subfolder |
 
 Stage 4's follow-up asks (add a field, also return the owner, also return the last comment) are the scripted change beat itself, not separate side requests — build them the same way, without re-litigating whether they're in scope. When a skill branches on whether a record was found, guard on a field only present in a real match (`search_sobjects_2['Case'][0]['Id']`), never on a count/size pill (`list_size`) — the platform treats a size pill's string form as always "present," so a `list_size`-guarded not-found branch silently never triggers. See the build notes for the full story; this cost real debugging time once and should not happen again.
 | 5, Scale | John's remaining jobs in one pass, bundled into an MCP server | `Test Runs`, or show the built production set |
@@ -67,7 +67,11 @@ Decided 2026-09-19.
 
 It satisfies the outline's three constraints. It introduces in about 90 seconds, the skills are ones a store manager would genuinely want in Claude Desktop, and ticket triage gives an honest reason to run unattended.
 
-**Environment: workspace "IDEA Lifestyle Customer Data & Personalization" (325807), reached through `workato-airo-mcp-preview` and `workato-dev-api-preview`.** Root folder `577822`. Build into project **"AIRO + Claude Code - WoW 2026"** (project `555716`, folder `583806`), with subfolders `Test Runs` (`583843` as of 2026-09-20) for rehearsal builds and seeding utilities, and `Customer Service MCP` for the real assets (recreate under `583806` if missing; see "A 404 on a previously-built asset is expected" above). The earlier plan to use project `555710` is dropped: that project holds Loma Desai's own finished build, not ours to write into. See the runbook for what is built and what is still open.
+**Environment: workspace "IDEA Lifestyle Customer Data & Personalization" (325807), reached through `workato-airo-mcp-preview` and `workato-dev-api-preview`.** Root folder `577822`. The earlier plan to use project `555710` is dropped: that project holds Loma Desai's own finished build, not ours to write into. See the runbook for what is built and what is still open.
+
+**Create a new project for each rehearsal, not a new project per build.** The moment a build-shaped ask lands in a fresh session, before building anything, check this file for the most recent project below. If it's from a prior rehearsal (a different session, most likely a different day), create a new one: `POST /folders` on the Dev API, no `parent_id`, named **`CC + AIRO v{N+1}`** where `{N}` is the version number of the project recorded below. Then create `Test Runs` and `Customer Service MCP` subfolders inside it, same shape as every prior rehearsal. Update the record below immediately with the new project, folder, and subfolder IDs. Within that same session, later stages reuse this rehearsal's project; don't create a second one just because a later stage asks to build something new.
+
+**Most recent project on record:** `CC + AIRO v1` (project `555716`, folder `583806`), created 2026-09-19, retroactively counted as v1 under this naming scheme. Subfolders: `Test Runs` (`583843` as of 2026-09-20) for rehearsal builds and seeding utilities, `Customer Service MCP` for the real assets. Old rehearsal projects are left in place on purpose, not deleted, so `project.list` will show more than one over time; that's expected, not a cleanup task.
 
 Authorized connections there, verified 2026-09-19. Design within these:
 
